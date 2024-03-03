@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TicketService {
-  findAll(page: number, size: number) {
+  async findAll(page: number, size: number) {
     console.log({
       page: typeof page,
       size: typeof size,
@@ -12,9 +12,12 @@ export class TicketService {
     };
   }
 
-  findOne(id: any) {
-    return {
-      message: 'Ticket',
-    };
+  async findOne(id: any) {
+    return { id: '111', title: 'ddd' };
+  }
+
+  async create(title: string, desc?: string) {
+    console.log({ title, desc });
+    throw new Error('ddd');
   }
 }

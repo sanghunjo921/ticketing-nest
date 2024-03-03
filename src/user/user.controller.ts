@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import { ApiGetResponse } from 'src/common/decorator/doc-res.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import { FindUserReqDto } from './dto/req.dto';
 import { UserResDto, UsersResDto } from './dto/res.dto';
@@ -11,11 +12,13 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiGetResponse(UserResDto, 'All users found successfully')
   @Get()
   findAll(@Query() { page, size }: PageReqDto): Promise<UsersResDto> {
     return this.userService.findAll(page, size);
   }
 
+  @ApiGetResponse(UserResDto, 'User found successfully')
   @Get(':id')
   findOne(@Param() { id }: FindUserReqDto): Promise<UserResDto> {
     return this.userService.findOne(id);

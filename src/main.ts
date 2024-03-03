@@ -21,5 +21,6 @@ async function bootstrap() {
     }),
   );
   await app.listen(3000);
+  console.log(`App is running on: 3000`);
 }
 bootstrap();
