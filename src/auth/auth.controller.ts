@@ -16,16 +16,6 @@ import { SigninResDto, SignupResDto } from './dto/res.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  //   @ApiCreatedResponse({
-  //     schema: {
-  //       allOf: [
-  //         {
-  //           $ref: getSchemaPath(SignupResDto),
-  //         },
-  //       ],
-  //     },
-  //     description: 'User signed up successfully',
-  //   })
   @ApiPostResponse(SignupResDto, 'User signed up successfully')
   @Post('signup')
   async signup(

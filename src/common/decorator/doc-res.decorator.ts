@@ -30,6 +30,7 @@ export const ApiGetResponse = <T extends Type<any>>(
   );
 };
 
+//data를 주어진대로가 아닌 변경해서 반환할대 스키마로
 export const ApiGetPageResponse = <T extends Type<any>>(
   modelDto: T,
   description: string = '',
@@ -56,3 +57,4 @@ export const ApiGetPageResponse = <T extends Type<any>>(
     }),
   );
 };
+//
