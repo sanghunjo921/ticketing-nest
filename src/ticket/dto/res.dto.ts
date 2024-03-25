@@ -4,7 +4,7 @@ export class FindTicketResDto {
   @ApiProperty({
     required: true,
   })
-  id: string;
+  id: number;
   @ApiProperty({
     required: true,
   })
@@ -16,3 +16,5 @@ export class FindTicketResDto {
 }
 
 export class CreateTicketResDto {}
+
+export class UpdateTicketResDto {}

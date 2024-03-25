@@ -17,5 +17,5 @@ export class PageReqDto {
   })
   @Transform(({ value }) => parseInt(value))
   @IsInt()
-  size: number;
+  size: number = 10;
 }
