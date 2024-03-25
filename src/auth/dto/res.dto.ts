@@ -1,10 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SignupResDto {
-  @ApiProperty({
-    required: true,
-  })
-  id: string;
+  @ApiPropertyOptional()
+  id?: string;
   @ApiPropertyOptional({
     required: true,
   })

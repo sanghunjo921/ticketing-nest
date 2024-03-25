@@ -5,6 +5,8 @@ import { TicketModule } from './ticket/ticket.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dbConfig from './config/postgres.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { CouponModule } from './coupon/coupon.module';
+import { DiscountRateModule } from './discount-rate/discount-rate.module';
 
 // 관리용 module by domain
 @Module({
@@ -33,6 +35,8 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
     AuthModule,
     UserModule,
     TicketModule,
+    CouponModule,
+    DiscountRateModule,
   ],
 })
 export class AppModule {}
