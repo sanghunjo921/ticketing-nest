@@ -241,7 +241,7 @@ export class UserService {
     }
   }
 
-  async getPurchaseHistory(id: string) {
+  async getPurchaseHistory(id: string, page: number, size: number) {
     const user = await this.userRepository.findOne({
       where: {
         id: id,
