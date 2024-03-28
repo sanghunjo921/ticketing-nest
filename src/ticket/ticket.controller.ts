@@ -59,10 +59,10 @@ export class TicketController {
     return this.ticketSerivce.createBulkTickets();
   }
 
-  @ApiGetPageResponse(FindTicketResDto, 'Find all tickets')
+  @ApiGetPageResponse(FindTicketResDto, 'Find all ticket s')
   @Get()
-  findAll() {
-    return this.ticketSerivce.findAll();
+  findAll(@Query() { page, size }: PageReqDto) {
+    return this.ticketSerivce.findAll(page, size);
   }
 
   @ApiGetResponse(FindTicketResDto, 'Ticket found successfully')
