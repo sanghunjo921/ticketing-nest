@@ -16,19 +16,18 @@ export class TicketService {
     @InjectRedis()
     private readonly redisService: Redis,
   ) {}
-  async findAll() {
-    // const skip = (page - 1) * size;
-    // const ticketKey = `tickets_page_${page}`;
+  async findAll(page: number, size: number) {
+    const skip = (page - 1) * size;
+    const ticketKey = `tickets_page_${page}`;
 
-    // let tickets = JSON.parse(await this.redisService.get(ticketKey));
-    const tickets = await this.ticketRepository.find();
-    // if (!tickets) {
-    //   tickets = await this.ticketRepository.find({ skip: skip, take: size });
+    let tickets = JSON.parse(await this.redisService.get(ticketKey));
+    if (!tickets) {
+      tickets = await this.ticketRepository.find({ skip: skip, take: size });
 
-    //   if (tickets || tickets.length !== 0) {
-    //     await this.redisService.set(ticketKey, JSON.stringify(tickets));
-    //   }
-    // }
+      if (tickets || tickets.length !== 0) {
+        await this.redisService.set(ticketKey, JSON.stringify(tickets));
+      }
+    }
 
     return tickets;
   }
