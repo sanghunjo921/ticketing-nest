@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/user/entity/user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { MembershipLevel } from '../type/discountRate.enum';
 
 const discountRates = {
@@ -18,10 +19,13 @@ export class DiscountRate {
     enum: Object.values(MembershipLevel),
     unique: true,
   })
-  membershipLevel: MembershipLevel;
+  membershipLevel: string;
 
   @Column({ type: 'float', nullable: false })
   discountRatio: number;
+
+  @OneToMany(() => User, (user) => user.discountRate)
+  users: User[];
 }
 
 export const discountRateInstances = Object.keys(discountRates).map(

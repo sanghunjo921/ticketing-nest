@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -35,11 +36,6 @@ export class CreateUserReqDto {
 }
 
 export class UpdateUserReqDto {
-  @ApiProperty({
-    required: true,
-  })
-  @IsUUID()
-  id: string;
   @IsOptional()
   @ApiPropertyOptional()
   email?: string;
@@ -63,4 +59,35 @@ export class DeleteUserReqDto {
   })
   @IsUUID()
   id: string;
+}
+
+export class ReserveTicketReqDto {
+  @ApiProperty({
+    required: true,
+  })
+  ticketId: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  quantity: number = 1;
+}
+
+export class PurchaseTicketReqDto {
+  @ApiProperty({
+    required: true,
+  })
+  ticketId: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  couponId: number;
+}
+
+export class IssueCouponReqDto {
+  @ApiProperty({
+    required: true,
+  })
+  @IsNumber()
+  couponId: number;
 }

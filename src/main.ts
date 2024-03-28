@@ -10,6 +10,7 @@ async function bootstrap() {
     .setTitle('Ticketing API')
     .setDescription('')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('Ticketing')
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);

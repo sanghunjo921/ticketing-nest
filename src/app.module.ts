@@ -7,6 +7,7 @@ import dbConfig from './config/postgres.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CouponModule } from './coupon/coupon.module';
 import { DiscountRateModule } from './discount-rate/discount-rate.module';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 // 관리용 module by domain
 @Module({
@@ -30,6 +31,12 @@ import { DiscountRateModule } from './discount-rate/discount-rate.module';
         } as any;
         console.log(typeOrmModuleOptions);
         return typeOrmModuleOptions;
+      },
+    }),
+    RedisModule.forRoot({
+      config: {
+        host: 'redis',
+        port: 6379,
       },
     }),
     AuthModule,

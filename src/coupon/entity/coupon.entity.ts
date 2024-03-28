@@ -1,8 +1,10 @@
 import { IsNumber, Max, Min, ValidateIf } from 'class-validator';
+import { User } from 'src/user/entity/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -49,4 +51,7 @@ export class Coupon {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToMany(() => User, (user) => user.coupons)
+  users: User[];
 }
