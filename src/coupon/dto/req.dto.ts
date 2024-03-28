@@ -51,3 +51,19 @@ export class CreateCouponReqDto {
   @IsNumber()
   expiryDate: number;
 }
+
+export class UpdateCouponReqDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @MinLength(5)
+  @MaxLength(10)
+  code?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  amount?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  expiryDate?: number;
+}

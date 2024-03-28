@@ -61,8 +61,8 @@ export class TicketController {
 
   @ApiGetPageResponse(FindTicketResDto, 'Find all tickets')
   @Get()
-  findAll(@Query() { page, size }: PageReqDto) {
-    return this.ticketSerivce.findAll(page, size);
+  findAll() {
+    return this.ticketSerivce.findAll();
   }
 
   @ApiGetResponse(FindTicketResDto, 'Ticket found successfully')
@@ -74,7 +74,7 @@ export class TicketController {
   @ApiUpdateResponse(UpdateTicketResDto, 'Ticket updated successfully')
   @Patch(':id')
   update(
-    @Param() id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) data: UpdateTicketReqDto,
   ): Promise<UpdateTicketResDto> {
     return this.ticketSerivce.update(id, data);

@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UpdateCouponReqDto } from './dto/req.dto';
 import { Coupon } from './entity/coupon.entity';
 
 @Injectable()
@@ -28,6 +29,16 @@ export class CouponService {
     });
 
     return this.couponRepository.save(coupon);
+  }
+
+  async update(id: number, updateData: UpdateCouponReqDto) {
+    const target = await this.couponRepository.findOneBy({ id });
+    const { affected } = await this.couponRepository.update(id, updateData);
+
+    if (affected === 0) {
+      throw new HttpException('Coupon not found', HttpStatus.BAD_REQUEST);
+    }
+    return { ...target, ...updateData };
   }
 
   async delete(id: number) {

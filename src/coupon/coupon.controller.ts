@@ -4,7 +4,9 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -15,7 +17,7 @@ import {
 } from 'src/common/decorator/doc-res.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import { CouponService } from './coupon.service';
-import { CreateCouponReqDto } from './dto/req.dto';
+import { CreateCouponReqDto, UpdateCouponReqDto } from './dto/req.dto';
 import { CreateCouponResDto, FindCouponResDto } from './dto/res.dto';
 
 @Controller('coupon')
@@ -37,8 +39,16 @@ export class CouponController {
     return this.couponService.create(code, amount, expiryDate, isPercentage);
   }
 
+  @Put(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateData: UpdateCouponReqDto,
+  ) {
+    return this.couponService.update(id, updateData);
+  }
+
   @Delete(':id')
-  delete(@Param() id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.couponService.delete(id);
   }
 }

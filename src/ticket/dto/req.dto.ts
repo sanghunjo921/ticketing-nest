@@ -56,6 +56,7 @@ export class CreateTicketReqDto {
 export class UpdateTicketReqDto {
   @ApiPropertyOptional()
   @IsString()
+  @IsOptional()
   @MinLength(3)
   @MaxLength(30)
   title?: string;

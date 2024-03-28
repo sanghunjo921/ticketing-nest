@@ -5,16 +5,32 @@ import { UpdateTicketReqDto } from './dto/req.dto';
 import { FindTicketResDto } from './dto/res.dto';
 import { Ticket } from './entity/ticket.entity';
 import { Status } from './type/ticket.enum';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import Redis from 'ioredis';
 
 @Injectable()
 export class TicketService {
   constructor(
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
+    @InjectRedis()
+    private readonly redisService: Redis,
   ) {}
-  async findAll(page: number, size: number) {
-    const skip = (page - 1) * size;
-    return this.ticketRepository.find({ skip: skip, take: size });
+  async findAll() {
+    // const skip = (page - 1) * size;
+    // const ticketKey = `tickets_page_${page}`;
+
+    // let tickets = JSON.parse(await this.redisService.get(ticketKey));
+    const tickets = await this.ticketRepository.find();
+    // if (!tickets) {
+    //   tickets = await this.ticketRepository.find({ skip: skip, take: size });
+
+    //   if (tickets || tickets.length !== 0) {
+    //     await this.redisService.set(ticketKey, JSON.stringify(tickets));
+    //   }
+    // }
+
+    return tickets;
   }
 
   async findOne(id: number): Promise<FindTicketResDto> {

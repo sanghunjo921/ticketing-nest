@@ -1,7 +1,9 @@
+import { User } from 'src/user/entity/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -34,4 +36,7 @@ export class Ticket {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToMany(() => User, (user) => user.tickets)
+  users: User[];
 }
