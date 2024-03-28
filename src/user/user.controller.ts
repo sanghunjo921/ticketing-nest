@@ -100,4 +100,9 @@ export class UserController {
   ) {
     return this.userService.purchase(id, ticketId, couponId);
   }
+
+  @Get(':id/purchaseHistory')
+  getPurchaseHistory(@Param() { id }: FindUserReqDto) {
+    return this.userService.getPurchaseHistory(id);
+  }
 }
