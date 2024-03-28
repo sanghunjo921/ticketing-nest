@@ -240,4 +240,15 @@ export class UserService {
       return transactionData;
     }
   }
+
+  async getPurchaseHistory(id: string, page: number, size: number) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+      relations: ['transactions'],
+    });
+
+    return user.transactions;
+  }
 }
