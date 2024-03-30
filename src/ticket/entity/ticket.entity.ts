@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -38,5 +39,6 @@ export class Ticket {
   updatedAt: Date;
 
   @ManyToMany(() => User, (user) => user.tickets)
+  @JoinTable()
   users: User[];
 }

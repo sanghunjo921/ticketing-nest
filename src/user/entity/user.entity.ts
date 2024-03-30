@@ -46,7 +46,6 @@ export class User {
   discountRate: DiscountRate;
 
   @ManyToMany(() => Ticket, (ticket) => ticket.users)
-  @JoinTable()
   tickets: Ticket[];
 
   @ManyToMany(() => Coupon, (coupon) => coupon.users)

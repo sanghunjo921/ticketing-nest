@@ -34,8 +34,6 @@ export class UserService {
     private readonly couponRepository: Repository<Coupon>,
   ) {}
 
-  private reservedQuantities: Map<string, number> = new Map<string, number>();
-
   async findAll(page: number, size: number) {
     const skip = (page - 1) * size;
     return this.userRepository.find({ skip: skip, take: size });
@@ -108,19 +106,23 @@ export class UserService {
 
     const remainingQuantity = ticket.remaining_number;
 
-    if (remainingQuantity < quantity) {
+    const quantityKey = `${id}-${ticketId}:reservedQuantity`;
+    let reservedQuantity =
+      JSON.parse(await this.redisService.get(quantityKey)) ?? 0;
+
+    if (!reservedQuantity) {
+      await this.redisService.set(quantityKey, 0);
+    }
+
+    if (remainingQuantity < reservedQuantity || remainingQuantity < quantity) {
       throw new HttpException('No enough tickets', HttpStatus.BAD_REQUEST);
     }
 
-    // await this.ticketRepository.update(ticketId, {
-    //   remaining_number: remainingQuantity - quantity,
-    // });
-    user.tickets.push(ticket);
+    await this.redisService.incrby(quantityKey, quantity);
 
-    const key = `${id}-${ticketId}`;
-    let reservedQuantity = this.reservedQuantities.get(key) ?? 0;
-    reservedQuantity += quantity;
-    this.reservedQuantities.set(key, reservedQuantity);
+    console.log({ reservedQuantity });
+
+    user.tickets.push(ticket);
 
     await this.userRepository.save(user);
 
@@ -217,21 +219,21 @@ export class UserService {
       appliedPrice = Math.ceil(appliedPrice);
 
       const key = `${id}-${ticketId}`;
-      let reservedQuantity = this.reservedQuantities.get(key);
-      this.reservedQuantities.delete(key);
+      // let reservedQuantity = this.reservedQuantities.get(key);
+      // this.reservedQuantities.delete(key);
 
-      const newRemaining = ticket.remaining_number - reservedQuantity;
+      // const newRemaining = ticket.remaining_number - reservedQuantity;
 
-      await this.ticketRepository.update(ticketId, {
-        remaining_number: newRemaining,
-      });
+      // await this.ticketRepository.update(ticketId, {
+      //   remaining_number: newRemaining,
+      // });
 
       const transactionData = {
         userId: id,
         ticketId: ticketId,
         couponId: coupon ? couponId : null,
         totalPrice: appliedPrice,
-        quantity: reservedQuantity,
+        // quantity: reservedQuantity,
         createdAt: new Date(),
       };
 
