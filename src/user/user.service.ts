@@ -86,11 +86,14 @@ export class UserService {
   }
 
   async reserveTicket(id: string, ticketId: number, quantity: number) {
-    const user = await this.userRepository.findOne({
+    const multi = this.redisService.multi();
+
+    const user: User = await this.userRepository.findOne({
       where: { id },
     });
 
     if (!user) {
+      multi.discard();
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
@@ -98,23 +101,13 @@ export class UserService {
     const ticketRemainingKey: string = `ticket:${ticketId}:remaining`;
     const quantityKey: string = `${ticketKey}:reservedQuantity`;
 
-    let ticketData: any = JSON.parse(await this.redisService.get(ticketKey));
-    let ticketRemainingData: number = JSON.parse(
-      await this.redisService.get(ticketRemainingKey),
-    );
-
-    let reservedQuantity: number = JSON.parse(
-      await this.redisService.get(quantityKey),
-    );
-
-    if (!reservedQuantity) {
-      await this.redisService.set(quantityKey, quantity);
-      reservedQuantity = quantity;
-    }
-
-    if (ticketRemainingData && ticketRemainingData < reservedQuantity) {
-      throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
-    }
+    let [ticketData, ticketRemainingData, reservedQuantity] =
+      await this.redisService
+        .mget(ticketKey, ticketRemainingKey, quantityKey)
+        .then((results) =>
+          results.map((item) => (item ? JSON.parse(item) : null)),
+        );
+    console.log({ ticketData, ticketRemainingData, reservedQuantity });
 
     if (!ticketData) {
       ticketData = await this.ticketRepository.findOne({
@@ -124,22 +117,46 @@ export class UserService {
       });
 
       if (!ticketData) {
+        multi.discard();
         throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
       }
 
       ticketRemainingData = ticketData.remaining_number;
+      reservedQuantity = quantity;
 
       if (ticketRemainingData < reservedQuantity) {
+        multi.discard();
         throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
       }
 
       ticketRemainingData -= quantity;
 
-      await this.redisService.set(ticketKey, stringify(ticketData));
-      await this.redisService.set(ticketRemainingKey, ticketRemainingData);
+      multi.mset({
+        [ticketKey]: JSON.stringify(ticketData),
+        [ticketRemainingKey]: ticketRemainingData,
+        [quantityKey]: reservedQuantity,
+      });
     } else {
-      await this.redisService.incrby(quantityKey, quantity);
-      await this.redisService.incrby(ticketRemainingKey, -quantity);
+      if (ticketRemainingData < reservedQuantity) {
+        multi.discard();
+        throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
+      }
+      await Promise.all([
+        multi.incrby(quantityKey, quantity),
+        multi.incrby(ticketRemainingKey, -quantity),
+      ]);
+    }
+
+    const results = await multi.exec();
+    const transactionFailed = results.some((result) => result instanceof Error);
+
+    if (transactionFailed) {
+      throw new HttpException(
+        'Transaction failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } else {
+      console.log('success');
     }
 
     return ticketData;
@@ -175,69 +192,77 @@ export class UserService {
   async purchase(id: string, ticketId: number, couponId: number) {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['tickets', 'coupons', 'discountRate'],
+      relations: ['coupons', 'discountRate'],
     });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const ticket = user.tickets.find((ticket) => ticket.id === ticketId);
+    const ticketKey: string = `user:${id}-ticket:${ticketId}`;
+    const ticketRemainingKey: string = `ticket:${ticketId}:remaining`;
+    const quantityKey: string = `${ticketKey}:reservedQuantity`;
 
-    if (!ticket) {
-      throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
-    } else {
-      const index = user.tickets.findIndex((ticket) => ticket.id === ticketId);
-      if (index !== -1) {
-        console.log(index);
-        user.tickets.splice(index, 1);
+    let ticketData: Ticket = JSON.parse(await this.redisService.get(ticketKey));
+
+    if (!ticketData) {
+      ticketData = await this.ticketRepository.findOne({
+        where: {
+          id: ticketId,
+        },
+      });
+      if (!ticketData) {
+        throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
       }
 
-      let appliedPrice: number = ticket.price;
-
-      const coupon = user.coupons.find((coupon) => coupon.id === couponId);
-
-      if (coupon) {
-        if (coupon.isPercentage) {
-          appliedPrice = Math.ceil(
-            appliedPrice - (appliedPrice * coupon.amount) / 100,
-          );
-        } else {
-          appliedPrice = Math.max(appliedPrice - coupon.amount, 0);
-        }
-        const index = user.coupons.findIndex((c) => c.id === couponId);
-        if (index !== -1) {
-          user.coupons.splice(index, 1);
-        }
-      }
-      let discountRatio: number = user.discountRate.discountRatio;
-
-      appliedPrice -= appliedPrice * discountRatio;
-      appliedPrice = Math.ceil(appliedPrice);
-
-      const key = `${id}-${ticketId}`;
-      // let reservedQuantity = this.reservedQuantities.get(key);
-      // this.reservedQuantities.delete(key);
-
-      // const newRemaining = ticket.remaining_number - reservedQuantity;
-
-      // await this.ticketRepository.update(ticketId, {
-      //   remaining_number: newRemaining,
-      // });
-
-      const transactionData = {
-        userId: id,
-        ticketId: ticketId,
-        couponId: coupon ? couponId : null,
-        totalPrice: appliedPrice,
-        // quantity: reservedQuantity,
-        createdAt: new Date(),
-      };
-
-      await this.transactionRepository.save(transactionData);
-      await this.userRepository.save(user);
-      return transactionData;
+      await this.redisService.set(ticketKey, JSON.stringify(ticketData));
     }
+
+    let appliedPrice: number = ticketData.price;
+
+    const coupon: Coupon = user.coupons.find(
+      (coupon) => coupon.id === couponId,
+    );
+
+    if (coupon) {
+      if (coupon.isPercentage) {
+        appliedPrice = Math.ceil(
+          appliedPrice - (appliedPrice * coupon.amount) / 100,
+        );
+      } else {
+        appliedPrice = Math.max(appliedPrice - coupon.amount, 0);
+      }
+      const index = user.coupons.findIndex((c) => c.id === couponId);
+      if (index !== -1) {
+        user.coupons.splice(index, 1);
+      }
+    }
+    let discountRatio: number = user.discountRate.discountRatio;
+
+    appliedPrice -= appliedPrice * discountRatio;
+    appliedPrice = Math.ceil(appliedPrice);
+
+    // let reservedQuantity = this.reservedQuantities.get(key);
+    // this.reservedQuantities.delete(key);
+
+    // const newRemaining = ticket.remaining_number - reservedQuantity;
+
+    // await this.ticketRepository.update(ticketId, {
+    //   remaining_number: newRemaining,
+    // });
+
+    const transactionData = {
+      userId: id,
+      ticketId: ticketId,
+      couponId: coupon ? couponId : null,
+      totalPrice: appliedPrice,
+      // quantity: reservedQuantity,
+      createdAt: new Date(),
+    };
+
+    await this.transactionRepository.save(transactionData);
+    await this.userRepository.save(user);
+    return transactionData;
   }
 
   async getPurchaseHistory(id: string, page: number, size: number) {
