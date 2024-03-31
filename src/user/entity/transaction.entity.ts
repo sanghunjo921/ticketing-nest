@@ -13,9 +13,6 @@ export class Transaction {
   id: number;
 
   @Column()
-  userId: string;
-
-  @Column()
   ticketId: number;
 
   @Column({ nullable: true })
