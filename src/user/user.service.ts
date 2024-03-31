@@ -17,6 +17,7 @@ import { Membership } from './type/user.enum';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
+import { stringify } from 'querystring';
 
 @Injectable()
 export class UserService {
@@ -87,46 +88,61 @@ export class UserService {
   async reserveTicket(id: string, ticketId: number, quantity: number) {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['tickets'],
     });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const ticket = await this.ticketRepository.findOne({
-      where: {
-        id: ticketId,
-      },
-    });
+    const ticketKey: string = `user:${id}-ticket:${ticketId}`;
+    const ticketRemainingKey: string = `ticket:${ticketId}:remaining`;
+    const quantityKey: string = `${ticketKey}:reservedQuantity`;
 
-    if (!ticket) {
-      throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
-    }
+    let ticketData: any = JSON.parse(await this.redisService.get(ticketKey));
+    let ticketRemainingData: number = JSON.parse(
+      await this.redisService.get(ticketRemainingKey),
+    );
 
-    const remainingQuantity = ticket.remaining_number;
-
-    const quantityKey = `${id}-${ticketId}:reservedQuantity`;
-    let reservedQuantity =
-      JSON.parse(await this.redisService.get(quantityKey)) ?? 0;
+    let reservedQuantity: number = JSON.parse(
+      await this.redisService.get(quantityKey),
+    );
 
     if (!reservedQuantity) {
-      await this.redisService.set(quantityKey, 0);
+      await this.redisService.set(quantityKey, quantity);
+      reservedQuantity = quantity;
     }
 
-    if (remainingQuantity < reservedQuantity || remainingQuantity < quantity) {
-      throw new HttpException('No enough tickets', HttpStatus.BAD_REQUEST);
+    if (ticketRemainingData && ticketRemainingData < reservedQuantity) {
+      throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
     }
 
-    await this.redisService.incrby(quantityKey, quantity);
+    if (!ticketData) {
+      ticketData = await this.ticketRepository.findOne({
+        where: {
+          id: ticketId,
+        },
+      });
 
-    console.log({ reservedQuantity });
+      if (!ticketData) {
+        throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
+      }
 
-    user.tickets.push(ticket);
+      ticketRemainingData = ticketData.remaining_number;
 
-    await this.userRepository.save(user);
+      if (ticketRemainingData < reservedQuantity) {
+        throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
+      }
 
-    return user.tickets;
+      ticketRemainingData -= quantity;
+
+      await this.redisService.set(ticketKey, stringify(ticketData));
+      await this.redisService.set(ticketRemainingKey, ticketRemainingData);
+    } else {
+      await this.redisService.incrby(quantityKey, quantity);
+      await this.redisService.incrby(ticketRemainingKey, -quantity);
+    }
+
+    return ticketData;
 
     // await this.userRepository.update(id, {tickets: })
 
