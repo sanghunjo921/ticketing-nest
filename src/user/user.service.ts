@@ -163,36 +163,42 @@ export class UserService {
   }
 
   async issueCoupon(id: string, couponId: number) {
-    const user = await this.userRepository.findOne({
+    const user: User = await this.userRepository.findOne({
       where: { id },
-      relations: ['coupons'],
     });
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const coupon = await this.couponRepository.findOne({
-      where: {
-        id: couponId,
-      },
-    });
+    const couponKey: string = `user:${id}:coupon:${couponId}`;
+    const couponCountKey: string = `${couponKey}:count`;
+
+    let coupon: Coupon = JSON.parse(await this.redisService.get(couponKey));
 
     if (!coupon) {
-      throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
+      coupon = await this.couponRepository.findOne({
+        where: {
+          id: couponId,
+        },
+      });
+
+      if (!coupon) {
+        throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
+      }
+
+      await this.redisService.set(couponKey, JSON.stringify(coupon));
+      await this.redisService.set(couponCountKey, 1);
+    } else {
+      await this.redisService.incrby(couponCountKey, 1);
     }
-
-    user.coupons.push(coupon);
-
-    await this.userRepository.save(user);
-
-    return user.coupons;
+    return coupon;
   }
 
   async purchase(id: string, ticketId: number, couponId: number) {
-    const user = await this.userRepository.findOne({
+    const user: User = await this.userRepository.findOne({
       where: { id },
-      relations: ['coupons', 'discountRate'],
+      relations: ['discountRate'],
     });
 
     if (!user) {
@@ -200,29 +206,23 @@ export class UserService {
     }
 
     const ticketKey: string = `user:${id}-ticket:${ticketId}`;
-    const ticketRemainingKey: string = `ticket:${ticketId}:remaining`;
     const quantityKey: string = `${ticketKey}:reservedQuantity`;
+    const couponKey: string = `user:${id}:coupon:${couponId}`;
+    const couponCountKey: string = `${couponKey}:count`;
 
-    let ticketData: Ticket = JSON.parse(await this.redisService.get(ticketKey));
+    const [ticketData, coupon, couponCount] = await this.redisService
+      .mget(ticketKey, couponKey, couponCountKey)
+      .then((results) =>
+        results.map((item) => (item ? JSON.parse(item) : null)),
+      );
 
     if (!ticketData) {
-      ticketData = await this.ticketRepository.findOne({
-        where: {
-          id: ticketId,
-        },
-      });
-      if (!ticketData) {
-        throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
-      }
-
-      await this.redisService.set(ticketKey, JSON.stringify(ticketData));
+      throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
     }
 
     let appliedPrice: number = ticketData.price;
 
-    const coupon: Coupon = user.coupons.find(
-      (coupon) => coupon.id === couponId,
-    );
+    console.log({ coupon, couponCount });
 
     if (coupon) {
       if (coupon.isPercentage) {
@@ -232,12 +232,17 @@ export class UserService {
       } else {
         appliedPrice = Math.max(appliedPrice - coupon.amount, 0);
       }
-      const index = user.coupons.findIndex((c) => c.id === couponId);
-      if (index !== -1) {
-        user.coupons.splice(index, 1);
+
+      await this.redisService.incrby(couponCountKey, -1);
+
+      if (couponCount === 0) {
+        await Promise.all([
+          await this.redisService.del(couponKey),
+          await this.redisService.del(couponCountKey),
+        ]);
       }
     }
-    let discountRatio: number = user.discountRate.discountRatio;
+    const discountRatio: number = user.discountRate.discountRatio;
 
     appliedPrice -= appliedPrice * discountRatio;
     appliedPrice = Math.ceil(appliedPrice);
@@ -251,17 +256,17 @@ export class UserService {
     //   remaining_number: newRemaining,
     // });
 
-    const transactionData = {
-      userId: id,
+    const transactionData: Transaction = {
+      id: null,
       ticketId: ticketId,
       couponId: coupon ? couponId : null,
       totalPrice: appliedPrice,
-      // quantity: reservedQuantity,
+      quantity: 1,
       createdAt: new Date(),
+      user: user,
     };
 
     await this.transactionRepository.save(transactionData);
-    await this.userRepository.save(user);
     return transactionData;
   }
 
