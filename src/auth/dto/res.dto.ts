@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RefreshToken } from '../entity/refreshToken.entity';
 
 export class SignupResDto {
   @ApiPropertyOptional()
@@ -10,7 +11,7 @@ export class SignupResDto {
   @ApiPropertyOptional({
     required: true,
   })
-  refreshToken?: string;
+  refreshToken?: RefreshToken;
 }
 
 export class SigninResDto extends SignupResDto {}

@@ -18,6 +18,7 @@ import {
   ApiPostResponse,
   ApiUpdateResponse,
 } from 'src/common/decorator/doc-res.decorator';
+import { Public } from 'src/common/decorator/public.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import {
   CreateUserReqDto,
@@ -39,6 +40,7 @@ import { UserService } from './user.service';
 
 @Controller('user')
 @ApiTags('User')
+@ApiBearerAuth()
 @ApiExtraModels(UsersResDto, UserResDto, FindUserReqDto, UpdateUserReqDto)
 export class UserController {
   constructor(private readonly userService: UserService) {}
