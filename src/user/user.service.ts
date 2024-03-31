@@ -103,6 +103,8 @@ export class UserService {
       await this.redisService.get(ticketRemainingKey),
     );
 
+    console.log({ ticketData });
+
     let reservedQuantity: number = JSON.parse(
       await this.redisService.get(quantityKey),
     );
