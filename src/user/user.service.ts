@@ -143,25 +143,6 @@ export class UserService {
     }
 
     return ticketData;
-
-    // await this.userRepository.update(id, {tickets: })
-
-    // if (ticketRemainingData && RemainingData < amount) {
-    //   throw new HttpException('Ticket is sold out', HttpStatus.BAD_REQUEST);
-    // }
-
-    // if (!ticket) {
-    //   throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
-    // }
-
-    // if (RemainingData > amount) {
-    //   RemainingData -= 1;
-    // }
-
-    // newticketData = {
-    //   status: ticket.status,
-    //   price: ticket.price,
-    // };
   }
 
   async issueCoupon(id: string, couponId: number) {

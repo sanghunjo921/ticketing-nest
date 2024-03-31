@@ -1,3 +1,4 @@
+import { RefreshToken } from 'src/auth/entity/refreshToken.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
@@ -54,4 +55,7 @@ export class User {
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
+
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshToken: RefreshToken;
 }

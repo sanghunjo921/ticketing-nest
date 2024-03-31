@@ -10,7 +10,7 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import {
   ApiDeleteResponse,
   ApiGetPageResponse,
@@ -18,6 +18,7 @@ import {
   ApiPostResponse,
   ApiUpdateResponse,
 } from 'src/common/decorator/doc-res.decorator';
+import { Public } from 'src/common/decorator/public.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import { PageResDto } from 'src/common/dto/res.dto';
 import {
@@ -39,6 +40,7 @@ import { TicketService } from './ticket.service';
 export class TicketController {
   constructor(private readonly ticketSerivce: TicketService) {}
 
+  @ApiBearerAuth()
   @ApiPostResponse(CreateTicketResDto, 'Ticket is created successfully')
   @Post()
   create(
@@ -54,24 +56,28 @@ export class TicketController {
     );
   }
 
+  @Public()
   @Post('dummyTikcets')
   createBulk() {
     return this.ticketSerivce.createBulkTickets();
   }
 
   @ApiGetPageResponse(FindTicketResDto, 'Find all ticket s')
+  @Public()
   @Get()
   findAll(@Query() { page, size }: PageReqDto) {
     return this.ticketSerivce.findAll(page, size);
   }
 
   @ApiGetResponse(FindTicketResDto, 'Ticket found successfully')
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<FindTicketResDto> {
     return this.ticketSerivce.findOne(id);
   }
 
   @ApiUpdateResponse(UpdateTicketResDto, 'Ticket updated successfully')
+  @ApiBearerAuth()
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -81,6 +87,7 @@ export class TicketController {
   }
 
   @ApiDeleteResponse(DeleteTicketReqDto, 'Ticket deleted')
+  @ApiBearerAuth()
   @Delete(':id')
   delete(@Param() id: number) {
     return this.ticketSerivce.delete(id);
