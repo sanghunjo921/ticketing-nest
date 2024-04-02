@@ -9,7 +9,6 @@ import { Transaction } from './entity/transaction.entity';
 import { Ticket } from './entity/ticket.entity';
 
 import * as cron from 'node-cron';
-import { request } from 'http';
 
 @Injectable()
 export class BatchService {
@@ -43,10 +42,7 @@ export class BatchService {
         ),
       );
 
-      await this.redisService.set(
-        'transaction',
-        JSON.stringify(batchedRequests),
-      );
+      await this.redisService.ltrim('transaction', batchSize, -1);
 
       for (const [ticketId, value] of ticketMap.entries()) {
         await this.ticketRepository.update(ticketId, {
@@ -66,9 +62,15 @@ export class BatchService {
       try {
         console.log('started cron');
         const transactionDataKey: string = 'transaction';
-        let batchedRequests = await this.redisService.get(transactionDataKey);
+        let batchedRequests = await this.redisService.lrange(
+          transactionDataKey,
+          0,
+          -1,
+        );
 
-        const requests = JSON.parse(batchedRequests);
+        const requests: Transaction[] = batchedRequests.map((item) =>
+          JSON.parse(item),
+        );
 
         const currentTime: number = Date.now();
         const timeLimit: number = 2 * 60 * 1000;
