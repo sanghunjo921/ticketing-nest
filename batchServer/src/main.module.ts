@@ -1,20 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { TicketModule } from './ticket/ticket.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import dbConfig from './config/postgres.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { CouponModule } from './coupon/coupon.module';
-import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-import jwtConfig from './config/jwt.config';
+import { BatchModule } from './batch/batch.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [dbConfig, jwtConfig],
+      load: [dbConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -44,11 +39,7 @@ import jwtConfig from './config/jwt.config';
         port: 6379,
       },
     }),
-    AuthModule,
-    UserModule,
-    TicketModule,
-    CouponModule,
-    DiscountRateModule,
+    BatchModule,
   ],
 })
-export class AppModule {}
+export class MainModule {}
