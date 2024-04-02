@@ -209,12 +209,14 @@ export class UserService {
     const quantityKey: string = `${ticketKey}:reservedQuantity`;
     const couponKey: string = `user:${id}:coupon:${couponId}`;
     const couponCountKey: string = `${couponKey}:count`;
+    const transactionKey = 'transaction';
 
-    const [ticketData, coupon, couponCount] = await this.redisService
-      .mget(ticketKey, couponKey, couponCountKey)
-      .then((results) =>
-        results.map((item) => (item ? JSON.parse(item) : null)),
-      );
+    let [ticketData, coupon, couponCount, cachedTransactionData] =
+      await this.redisService
+        .mget(ticketKey, couponKey, couponCountKey, transactionKey)
+        .then((results) =>
+          results.map((item) => (item ? JSON.parse(item) : null)),
+        );
 
     if (!ticketData) {
       throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
@@ -256,6 +258,12 @@ export class UserService {
     //   remaining_number: newRemaining,
     // });
 
+    if (!cachedTransactionData) {
+      cachedTransactionData = [];
+    } else {
+      cachedTransactionData = cachedTransactionData;
+    }
+
     const transactionData: Transaction = {
       id: null,
       ticketId: ticketId,
@@ -264,9 +272,16 @@ export class UserService {
       quantity: 1,
       createdAt: new Date(),
       user: user,
+      startTime: Date.now(),
     };
 
-    await this.transactionRepository.save(transactionData);
+    cachedTransactionData.push(transactionData);
+    await this.redisService.set(
+      transactionKey,
+      JSON.stringify(cachedTransactionData),
+    );
+
+    // await this.transactionRepository.save(transactionData);
     return transactionData;
   }
 
