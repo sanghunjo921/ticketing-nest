@@ -66,6 +66,8 @@ services:
     build:
       context: ./batchServer
       dockerfile: Dockerfile
+    volumes:
+      - ./batchServer/src:/batch/src
     depends_on:
       db:
         condition: service_healthy

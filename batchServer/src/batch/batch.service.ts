@@ -62,7 +62,7 @@ export class BatchService {
       try {
         console.log('started cron');
         const transactionDataKey: string = 'transaction';
-        let batchedRequests = await this.redisService.lrange(
+        const batchedRequests = await this.redisService.lrange(
           transactionDataKey,
           0,
           -1,
@@ -75,7 +75,7 @@ export class BatchService {
         const currentTime: number = Date.now();
         const timeLimit: number = 2 * 60 * 1000;
         let batchSize: number = 0;
-        let ticketMap: Map<number, number> = new Map<number, number>();
+        const ticketMap: Map<number, number> = new Map<number, number>();
 
         // console.log(typeof requests[0].ticketId);
         // console.log(currentTime - requests[0].startTime > timeLimit);
@@ -97,7 +97,7 @@ export class BatchService {
           }
         });
 
-        console.log(requests, batchSize, ticketMap);
+        // console.log(requests, batchSize, ticketMap);
 
         if (batchSize >= 1) {
           await this.processBatchedRequests(requests, batchSize, ticketMap);
