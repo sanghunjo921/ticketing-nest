@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -57,5 +58,6 @@ export class User {
   transactions: Transaction[];
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
+  @JoinColumn()
   refreshToken: RefreshToken;
 }

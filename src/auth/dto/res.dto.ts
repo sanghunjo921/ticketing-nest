@@ -11,7 +11,7 @@ export class SignupResDto {
   @ApiPropertyOptional({
     required: true,
   })
-  refreshToken?: RefreshToken;
+  refreshToken?: string;
 }
 
 export class SigninResDto extends SignupResDto {}
