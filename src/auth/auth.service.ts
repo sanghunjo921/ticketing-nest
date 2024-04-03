@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entity/refreshToken.entity';
 import { Repository } from 'typeorm';
+import { TokenType } from './type/auth.type';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,16 @@ export class AuthService {
     if (user) {
       throw new BadRequestException('User already exists');
     }
-    return this.userService.create(email, password);
+    const newUser = await this.userService.create(email, password);
+
+    const refreshToken = await this.createOrUpdateRefreshToken(
+      newUser.id,
+      this.generateToken(newUser.id, TokenType.REFRESH),
+    );
+    return {
+      accessToken: this.generateToken(newUser.id, TokenType.ACCESS),
+      refreshToken: refreshToken.token,
+    };
   }
 
   async signIn(email: string, password: string): Promise<SigninResDto> {
@@ -33,8 +43,44 @@ export class AuthService {
       throw new BadRequestException('Password does not match');
     }
 
+    const refreshToken = await this.createOrUpdateRefreshToken(
+      user.id,
+      this.generateToken(user.id, TokenType.REFRESH),
+    );
+
     return {
-      accessToken: this.jwtService.sign({ sub: user.id }),
+      accessToken: this.generateToken(user.id, TokenType.ACCESS),
+      refreshToken: refreshToken.token,
     };
+  }
+
+  private generateToken(userId: string, tokenType: TokenType): string {
+    const payload = {
+      sub: userId,
+      type: tokenType.toString(),
+    };
+
+    return tokenType === TokenType.REFRESH
+      ? this.jwtService.sign(payload, { expiresIn: '30d' })
+      : this.jwtService.sign(payload);
+  }
+
+  private async createOrUpdateRefreshToken(
+    userId: string,
+    token: string,
+  ): Promise<RefreshToken> {
+    let refreshToken = await this.refreshTorekenRepository.findOneBy({
+      user: { id: userId },
+    });
+
+    if (refreshToken) {
+      refreshToken.token = token;
+    } else {
+      refreshToken = this.refreshTorekenRepository.create({
+        token,
+        user: { id: userId },
+      });
+    }
+    return this.refreshTorekenRepository.save(refreshToken);
   }
 }

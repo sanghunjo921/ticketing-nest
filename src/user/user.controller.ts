@@ -18,7 +18,7 @@ import {
   ApiPostResponse,
   ApiUpdateResponse,
 } from 'src/common/decorator/doc-res.decorator';
-import { Public } from 'src/common/decorator/public.decorator';
+import { Public, Test } from 'src/common/decorator/public.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import {
   CreateUserReqDto,
@@ -40,11 +40,11 @@ import { UserService } from './user.service';
 
 @Controller('user')
 @ApiTags('User')
-@ApiBearerAuth()
 @ApiExtraModels(UsersResDto, UserResDto, FindUserReqDto, UpdateUserReqDto)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Public()
   @ApiGetResponse(UserResDto, 'All users found successfully')
   @Get()
   findAll(@Query() { page, size }: PageReqDto) {
@@ -94,6 +94,7 @@ export class UserController {
     return this.userService.issueCoupon(id, couponId);
   }
 
+  @Test()
   @Post(':id/ticket/:ticketId/purchase')
   purchase(
     @Param() { id }: FindUserReqDto,
