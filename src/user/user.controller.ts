@@ -44,7 +44,7 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Public()
+  @ApiBearerAuth()
   @ApiGetResponse(UserResDto, 'All users found successfully')
   @Get()
   findAll(@Query() { page, size }: PageReqDto) {
@@ -78,6 +78,7 @@ export class UserController {
     return this.userService.delete(id);
   }
 
+  @Test()
   @Post(':id/reserve')
   reserveTicket(
     @Param() { id }: FindUserReqDto,
