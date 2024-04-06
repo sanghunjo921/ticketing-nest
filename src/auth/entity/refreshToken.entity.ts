@@ -23,5 +23,6 @@ export class RefreshToken {
   updatedAt: Date;
 
   @OneToOne(() => User, (user) => user.refreshToken)
+  @JoinColumn()
   user: User;
 }

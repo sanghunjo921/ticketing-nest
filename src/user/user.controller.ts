@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/auth.guard.service';
 import {
   ApiDeleteResponse,
   ApiGetResponse,
@@ -19,6 +18,7 @@ import {
   ApiUpdateResponse,
 } from 'src/common/decorator/doc-res.decorator';
 import { Public, Test } from 'src/common/decorator/public.decorator';
+import { Roles } from 'src/common/decorator/role.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import {
   CreateUserReqDto,
@@ -36,6 +36,7 @@ import {
   UserResDto,
   UsersResDto,
 } from './dto/res.dto';
+import { Role } from './type/user.enum';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -45,6 +46,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiBearerAuth()
+  @Roles(Role.ADMIN)
   @ApiGetResponse(UserResDto, 'All users found successfully')
   @Get()
   findAll(@Query() { page, size }: PageReqDto) {
