@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TicketModule } from './ticket/ticket.module';
@@ -9,6 +9,7 @@ import { CouponModule } from './coupon/coupon.module';
 import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
+import { LoggerContextMiddleware } from './common/middleware/logger-context.middleware';
 
 @Module({
   imports: [
@@ -50,5 +51,10 @@ import jwtConfig from './config/jwt.config';
     CouponModule,
     DiscountRateModule,
   ],
+  providers: [Logger],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerContextMiddleware).forRoutes('*');
+  }
+}
