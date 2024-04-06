@@ -13,7 +13,7 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import { TicketService } from 'src/ticket/ticket.service';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
-import { Membership } from './type/user.enum';
+import { Membership, Role } from './type/user.enum';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
@@ -286,5 +286,14 @@ export class UserService {
     });
 
     return user.transactions;
+  }
+
+  async checkAdminRole(id: string): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user.role === Role.ADMIN;
   }
 }

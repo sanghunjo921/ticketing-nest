@@ -1,12 +1,26 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { IS_PUBLIC_KEY } from 'src/common/decorator/public.decorator';
+import { ROLES_KEY } from 'src/common/decorator/role.decorator';
+import { Role } from 'src/user/type/user.enum';
+import { UserService } from 'src/user/user.service';
+import { TokenType } from './type/auth.type';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly reflector: Reflector) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly jwtService: JwtService,
+    private readonly userSerivce: UserService,
+  ) {
     super();
   }
   canActivate(
@@ -20,6 +34,35 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (isPublic) {
       return true;
     }
+
+    const http = context.switchToHttp();
+    const { url, headers } = http.getRequest<Request>();
+
+    const token = /Bearer\s(.+)/.exec(headers.authorization)?.[1];
+
+    if (!token) {
+      throw new UnauthorizedException('no token');
+    }
+
+    const decoded = this.jwtService.decode(token);
+
+    console.log({ decoded });
+
+    if (!url.includes('refresh') && decoded.type === TokenType.REFRESH) {
+      throw new UnauthorizedException('refresh error');
+    }
+
+    const roles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getClass(),
+      context.getHandler(),
+    ]);
+
+    if (roles && roles.includes(Role.ADMIN)) {
+      const userId = decoded.sub;
+
+      return this.userSerivce.checkAdminRole(userId);
+    }
+
     return super.canActivate(context);
   }
 }

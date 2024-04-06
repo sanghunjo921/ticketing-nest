@@ -14,7 +14,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     @InjectRepository(RefreshToken)
-    private readonly refreshTorekenRepository: Repository<RefreshToken>,
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
   async signUp(email: string, password: string): Promise<SignupResDto> {
     const user = await this.userService.findOneByEmail(email);
@@ -54,6 +54,24 @@ export class AuthService {
     };
   }
 
+  async refresh(userId: string, token: string) {
+    const refresh = await this.refreshTokenRepository.findOneBy({ token });
+
+    if (!refresh) {
+      throw new BadRequestException('Invalid refresh Token');
+    }
+
+    const refreshToken = await this.createOrUpdateRefreshToken(
+      userId,
+      this.generateToken(userId, TokenType.REFRESH),
+    );
+
+    return {
+      accessToken: this.generateToken(userId, TokenType.ACCESS),
+      refreshToken: refreshToken.token,
+    };
+  }
+
   private generateToken(userId: string, tokenType: TokenType): string {
     const payload = {
       sub: userId,
@@ -69,18 +87,18 @@ export class AuthService {
     userId: string,
     token: string,
   ): Promise<RefreshToken> {
-    let refreshToken = await this.refreshTorekenRepository.findOneBy({
+    let refreshToken = await this.refreshTokenRepository.findOneBy({
       user: { id: userId },
     });
 
     if (refreshToken) {
       refreshToken.token = token;
     } else {
-      refreshToken = this.refreshTorekenRepository.create({
+      refreshToken = this.refreshTokenRepository.create({
         token,
         user: { id: userId },
       });
     }
-    return this.refreshTorekenRepository.save(refreshToken);
+    return this.refreshTokenRepository.save(refreshToken);
   }
 }

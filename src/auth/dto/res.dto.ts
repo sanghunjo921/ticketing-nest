@@ -15,3 +15,5 @@ export class SignupResDto {
 }
 
 export class SigninResDto extends SignupResDto {}
+
+export class RefreshResDto extends SignupResDto {}

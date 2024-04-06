@@ -1,4 +1,11 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Get,
+  Headers,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -6,14 +13,21 @@ import {
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { ApiPostResponse } from 'src/common/decorator/doc-res.decorator';
+import {
+  AuthUser,
+  AuthUserType,
+} from 'src/common/decorator/auth-user.decorator';
+import {
+  ApiGetResponse,
+  ApiPostResponse,
+} from 'src/common/decorator/doc-res.decorator';
 import { Public } from 'src/common/decorator/public.decorator';
 import { AuthService } from './auth.service';
 import { SigninReqDto, SignupReqDto } from './dto/req.dto';
-import { SigninResDto, SignupResDto } from './dto/res.dto';
+import { RefreshResDto, SigninResDto, SignupResDto } from './dto/res.dto';
 
 @Controller()
-@ApiExtraModels(SignupResDto, SigninResDto)
+@ApiExtraModels(SignupResDto, SigninResDto, RefreshResDto)
 @ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -37,5 +51,16 @@ export class AuthController {
     @Body() { email, password }: SigninReqDto,
   ): Promise<SigninResDto> {
     return this.authService.signIn(email, password);
+  }
+
+  @ApiBearerAuth()
+  @ApiGetResponse(RefreshResDto)
+  @Get('refresh')
+  async refresh(
+    @Headers('authorization') authorization,
+    @AuthUser() user: AuthUserType,
+  ) {
+    const token = /Bearer\s(.+)/.exec(authorization)?.[1];
+    return this.authService.refresh(user.id, token);
   }
 }
