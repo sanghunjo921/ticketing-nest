@@ -2,11 +2,18 @@ import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
+import path from 'path';
 import * as winston from 'winston';
-import DailyRotateFile = require('winston-daily-rotate-file');
+const winstonDaily = require('winston-daily-rotate-file');
+const moment = require('moment-timezone');
 
 const isProduction = process.env['NODE_ENV'] === 'production';
-const logDir = __dirname + '/../../logs';
+const logDir = path.join(__dirname, '../../logs');
+const appendTimestamp = winston.format((info, opts) => {
+  if (opts.tz)
+    info.timestamp = moment().tz(opts.tz).format(' YYYY-MM-DD HH:mm:ss ||');
+  return info;
+});
 
 const dailyOptions = (level: string) => {
   return {
@@ -27,7 +34,7 @@ export const winstonLogger = WinstonModule.createLogger({
       format: isProduction
         ? winston.format.simple()
         : winston.format.combine(
-            winston.format.timestamp(),
+            appendTimestamp({ tz: 'Asia/Seoul' }),
             winston.format.ms(),
             nestWinstonModuleUtilities.format.nestLike('TicketingApp', {
               colors: true,
@@ -35,8 +42,8 @@ export const winstonLogger = WinstonModule.createLogger({
             }),
           ),
     }),
-    new DailyRotateFile(dailyOptions('info')),
-    new DailyRotateFile(dailyOptions('warn')),
-    new DailyRotateFile(dailyOptions('error')),
+    new winstonDaily(dailyOptions('info')),
+    new winstonDaily(dailyOptions('warn')),
+    new winstonDaily(dailyOptions('error')),
   ],
 });
