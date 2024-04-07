@@ -9,7 +9,7 @@ import { CouponModule } from './coupon/coupon.module';
 import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
-import { LoggerContextMiddleware } from './common/middleware/logger-context.middleware';
+import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
