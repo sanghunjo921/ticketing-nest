@@ -2,13 +2,12 @@ import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
-import path from 'path';
 import * as winston from 'winston';
+// import { DailyRotateFile } from 'winston-daily-rotate-file';
 const winstonDaily = require('winston-daily-rotate-file');
 const moment = require('moment-timezone');
 
 const isProduction = process.env['NODE_ENV'] === 'production';
-const logDir = path.join(__dirname, '../../logs');
 const appendTimestamp = winston.format((info, opts) => {
   if (opts.tz)
     info.timestamp = moment().tz(opts.tz).format(' YYYY-MM-DD HH:mm:ss ||');
@@ -19,7 +18,7 @@ const dailyOptions = (level: string) => {
   return {
     level,
     datePattern: 'YYYY-MM-DD',
-    dirname: logDir + `/${level}`,
+    dirname: `./logs/`,
     filename: `%DATE%.${level}.log`,
     zippedArchive: true,
     maxSize: '20m',

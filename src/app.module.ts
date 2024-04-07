@@ -10,6 +10,8 @@ import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
+import { WinstonModule } from 'nest-winston';
+import { winstonLogger } from './config/logger.config';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
       isGlobal: true,
       load: [dbConfig, jwtConfig],
     }),
+    WinstonModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
