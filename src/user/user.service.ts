@@ -17,10 +17,17 @@ import { Role } from './type/user.enum';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
+import {
+  ClientProxy,
+  ClientProxyFactory,
+  Transport,
+} from '@nestjs/microservices';
+import { RabbitMqService } from 'src/rabbit-mq/rabbit-mq.service';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
+
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRedis()
@@ -33,6 +40,7 @@ export class UserService {
     private readonly transactionRepository: Repository<Transaction>,
     @InjectRepository(Coupon)
     private readonly couponRepository: Repository<Coupon>,
+    private readonly rabbitMqService: RabbitMqService,
   ) {}
 
   async findAll(page: number, size: number) {
@@ -296,6 +304,7 @@ export class UserService {
     );
     this.logger.log('Finished storing transactional data');
 
+    this.rabbitMqService.sendToRabbitMQ(user.id, ticketId, 1, appliedPrice);
     // await this.transactionRepository.save(transactionData);
     return transactionData;
   }
