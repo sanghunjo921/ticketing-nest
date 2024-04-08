@@ -10,6 +10,7 @@ import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
+import { WinstonModule } from 'nest-winston';
 
 @Module({
   imports: [

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateTicketReqDto } from './dto/req.dto';
@@ -10,6 +10,7 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class TicketService {
+  private readonly logger = new Logger(TicketService.name);
   constructor(
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
@@ -20,12 +21,18 @@ export class TicketService {
     const skip = (page - 1) * size;
     const ticketKey = `tickets_page_${page}`;
 
+    this.logger.log('Access to Redis to retrieve ticket data');
     let tickets = JSON.parse(await this.redisService.get(ticketKey));
+    this.logger.log('Finished retrieving ticket data from redis');
     if (!tickets) {
+      this.logger.log('No cache for ticket data. Fetching from db');
       tickets = await this.ticketRepository.find({ skip: skip, take: size });
+      this.logger.log('Finished retrieving ticket from db');
 
       if (tickets || tickets.length !== 0) {
+        this.logger.log('Trying to cache tickets in cache');
         await this.redisService.set(ticketKey, JSON.stringify(tickets));
+        this.logger.log('Finished caching tickets');
       }
     }
 
