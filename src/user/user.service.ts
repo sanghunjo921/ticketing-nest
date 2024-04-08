@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { ReserveTicketReqDto, UpdateUserReqDto } from './dto/req.dto';
 import { UserResDto, UsersResDto } from './dto/res.dto';
@@ -11,16 +12,15 @@ import { User } from './entity/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
-import { TicketService } from 'src/ticket/ticket.service';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
-import { Membership, Role } from './type/user.enum';
+import { Role } from './type/user.enum';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
-import { stringify } from 'querystring';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRedis()
@@ -88,9 +88,11 @@ export class UserService {
   async reserveTicket(id: string, ticketId: number, quantity: number) {
     const multi = this.redisService.multi();
 
+    this.logger.log('Retrieval of User data');
     const user: User = await this.userRepository.findOne({
       where: { id },
     });
+    this.logger.log('Found a user');
 
     if (!user) {
       multi.discard();
@@ -101,20 +103,27 @@ export class UserService {
     const ticketRemainingKey: string = `ticket:${ticketId}:remaining`;
     const quantityKey: string = `${ticketKey}:reservedQuantity`;
 
+    this.logger.log('Accessing to Redis to get data');
     let [ticketData, ticketRemainingData, reservedQuantity] =
       await this.redisService
         .mget(ticketKey, ticketRemainingKey, quantityKey)
         .then((results) =>
           results.map((item) => (item ? JSON.parse(item) : null)),
         );
-    console.log({ ticketData, ticketRemainingData, reservedQuantity });
+    this.logger.log('Finished getting data from Redis', {
+      ticketData,
+      ticketRemainingData,
+      reservedQuantity,
+    });
 
     if (!ticketData) {
+      this.logger.log('Accessing to DB to get data');
       ticketData = await this.ticketRepository.findOne({
         where: {
           id: ticketId,
         },
       });
+      this.logger.log('Finished getting data from DB');
 
       if (!ticketData) {
         multi.discard();
@@ -131,20 +140,24 @@ export class UserService {
 
       ticketRemainingData -= quantity;
 
+      this.logger.log('Accessing to Redis to change data');
       multi.mset({
         [ticketKey]: JSON.stringify(ticketData),
         [ticketRemainingKey]: ticketRemainingData,
         [quantityKey]: reservedQuantity,
       });
+      this.logger.log('Finished changing data');
     } else {
       if (ticketRemainingData < reservedQuantity) {
         multi.discard();
         throw new HttpException('Not enough Tickets', HttpStatus.BAD_REQUEST);
       }
+      this.logger.log('Accessing to Redis to change data');
       await Promise.all([
         multi.incrby(quantityKey, quantity),
         multi.incrby(ticketRemainingKey, -quantity),
       ]);
+      this.logger.log('Finished changing data');
     }
 
     const results = await multi.exec();
@@ -196,10 +209,12 @@ export class UserService {
   }
 
   async purchase(id: string, ticketId: number, couponId: number) {
+    this.logger.log('Accessing to DB to find user');
     const user: User = await this.userRepository.findOne({
       where: { id },
       relations: ['discountRate'],
     });
+    this.logger.log('Found user from DB');
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -211,11 +226,13 @@ export class UserService {
     const couponCountKey: string = `${couponKey}:count`;
     const transactionKey = 'transaction';
 
+    this.logger.log('Accessing to Redis to get data');
     let [ticketData, coupon, couponCount] = await this.redisService
       .mget(ticketKey, couponKey, couponCountKey)
       .then((results) =>
         results.map((item) => (item ? JSON.parse(item) : null)),
       );
+    this.logger.log('Found data from Redis');
 
     if (!ticketData) {
       throw new HttpException('Ticket not found', HttpStatus.NOT_FOUND);
@@ -234,13 +251,17 @@ export class UserService {
         appliedPrice = Math.max(appliedPrice - coupon.amount, 0);
       }
 
+      this.logger.log('Accessing to Redis to change coupon data');
       await this.redisService.incrby(couponCountKey, -1);
+      this.logger.log('Finished changing coupon data');
 
       if (couponCount === 0) {
+        this.logger.log('Accessing to Redis to delete coupon data');
         await Promise.all([
           await this.redisService.del(couponKey),
           await this.redisService.del(couponCountKey),
         ]);
+        this.logger.log('Finished deleting coupon data');
       }
     }
     const discountRatio: number = user.discountRate.discountRatio;
@@ -268,10 +289,12 @@ export class UserService {
       startTime: Date.now(),
     };
 
+    this.logger.log('Accessing to Redis to store transactional data');
     await this.redisService.rpush(
       transactionKey,
       JSON.stringify(transactionData),
     );
+    this.logger.log('Finished storing transactional data');
 
     // await this.transactionRepository.save(transactionData);
     return transactionData;
