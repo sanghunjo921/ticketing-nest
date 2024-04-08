@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { winstonLogger } from './config/logger.config';
+import { Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -34,6 +35,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   await app.listen(3000);
   console.log(`App is running on: 3000`);
 }

@@ -8,11 +8,13 @@ import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
+import { RabbitMqModule } from 'src/rabbit-mq/rabbit-mq.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Ticket, DiscountRate, Transaction, Coupon]),
     RedisModule,
+    RabbitMqModule,
   ],
   providers: [UserService],
   controllers: [UserController],

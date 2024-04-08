@@ -21,6 +21,8 @@ services:
         restart: true
       redis:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     deploy:
       replicas: 5
       resources:
@@ -74,3 +76,16 @@ services:
         restart: true
       redis:
         condition: service_started
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=sanghun
+      - RABBITMQ_DEFAULT_PASS=sanghun
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', 'status']
+      interval: 30s
+      timeout: 10s
+      retries: 5

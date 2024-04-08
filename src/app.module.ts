@@ -10,7 +10,7 @@ import { DiscountRateModule } from './discount-rate/discount-rate.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
-import { WinstonModule } from 'nest-winston';
+import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
 
 @Module({
   imports: [
@@ -51,6 +51,7 @@ import { WinstonModule } from 'nest-winston';
     TicketModule,
     CouponModule,
     DiscountRateModule,
+    RabbitMqModule,
   ],
   providers: [Logger],
 })
