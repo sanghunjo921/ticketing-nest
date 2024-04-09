@@ -14,11 +14,10 @@ export class LoggerContextMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const { ip, method, originalUrl, headers } = req;
     const userAgent = req.get('user-agent');
-    const dateTime = new Date();
     res.on('finish', () => {
       const { statusCode } = res;
       this.logger.log(
-        `${dateTime} ${method} ${originalUrl} ${statusCode} ${ip} ${userAgent}`,
+        ` ${method} ${originalUrl} ${statusCode} ${ip} ${userAgent}`,
       );
     });
 

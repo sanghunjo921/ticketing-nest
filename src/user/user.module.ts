@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -16,7 +16,7 @@ import { RabbitMqModule } from 'src/rabbit-mq/rabbit-mq.module';
     RedisModule,
     RabbitMqModule,
   ],
-  providers: [UserService],
+  providers: [UserService, Logger],
   controllers: [UserController],
   exports: [UserService],
 })

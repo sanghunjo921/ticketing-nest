@@ -35,7 +35,6 @@ export class TicketService {
         this.logger.log('Finished caching tickets');
       }
     }
-
     return tickets;
   }
 
