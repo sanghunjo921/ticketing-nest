@@ -7,7 +7,7 @@ import winstonDaily from 'winston-daily-rotate-file';
 import moment from 'moment-timezone';
 
 const isProduction = process.env['NODE_ENV'] === 'production';
-const logDir = __dirname + '/../../logs';
+const logDir = 'src/logs';
 
 const appendTimestamp = winston.format((info, opts) => {
   if (opts.tz)

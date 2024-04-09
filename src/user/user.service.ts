@@ -4,6 +4,8 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  Inject,
+  LoggerService,
 } from '@nestjs/common';
 import { ReserveTicketReqDto, UpdateUserReqDto } from './dto/req.dto';
 import { UserResDto, UsersResDto } from './dto/res.dto';
@@ -17,16 +19,11 @@ import { Role } from './type/user.enum';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
 import { RabbitMqService } from 'src/rabbit-mq/rabbit-mq.service';
 
 @Injectable()
 export class UserService {
-  private readonly logger = new Logger(UserService.name);
+  // private readonly logger = new Logger(UserService.name);
 
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
@@ -41,6 +38,7 @@ export class UserService {
     @InjectRepository(Coupon)
     private readonly couponRepository: Repository<Coupon>,
     private readonly rabbitMqService: RabbitMqService,
+    @Inject(Logger) private readonly logger: LoggerService,
   ) {}
 
   async findAll(page: number, size: number) {
