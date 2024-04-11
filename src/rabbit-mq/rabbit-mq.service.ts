@@ -38,8 +38,10 @@ export class RabbitMqService {
       totalPrice,
     };
     try {
+      await this.client.connect();
       await firstValueFrom(this.client.emit('completedTransaction', data));
       this.logger.log(`Sent ${JSON.stringify(data)} to RabbitMQ`);
+      await this.client.close();
     } catch (error) {
       this.logger.error('Error sending data to RabbitMQ:', error);
     }

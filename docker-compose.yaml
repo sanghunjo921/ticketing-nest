@@ -9,6 +9,8 @@ services:
       - '80:80'
     depends_on:
       - web
+    networks:
+      - ticket
   web:
     build:
       context: .
@@ -33,6 +35,9 @@ services:
       - '3000'
     logging:
       driver: 'json-file'
+    networks:
+      - ticket
+
   redis:
     image: redis:7.2
     restart: always
@@ -44,6 +49,9 @@ services:
       - ./data/redis-config:/usr/local/etc/redis
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
+    networks:
+      - ticket
+
   db:
     image: postgres:15
     environment:
@@ -64,6 +72,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+    networks:
+      - ticket
+
   cron:
     build:
       context: ./batchServer
@@ -76,6 +87,9 @@ services:
         restart: true
       redis:
         condition: service_started
+    networks:
+      - ticket
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
@@ -89,3 +103,9 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - ticket
+
+networks:
+  ticket:
+    name: ticketingnetwork
