@@ -2,7 +2,7 @@ name: Build Container Image
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
 
 env:
   AWS_REGION: ap-northeast-2
@@ -31,7 +31,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           GIT_SHA: ${{ github.sha }}
-          LATEST_TAG: "latest"
+          LATEST_TAG: 'latest'
         run: |
           # Build a docker container and
           # push it to ECR so that it can
