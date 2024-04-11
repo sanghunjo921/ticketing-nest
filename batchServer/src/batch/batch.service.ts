@@ -31,16 +31,30 @@ export class BatchService {
         0,
         batchSize,
       );
-      const createdTransactions: Transaction[] = await Promise.all(
-        transactionsToCreate.map((data: Transaction) =>
-          this.transactionRepository.create(data),
-        ),
-      );
-      await Promise.all(
-        createdTransactions.map((transaction: Transaction) =>
-          this.transactionRepository.save(transaction),
-        ),
-      );
+
+      const bulkInsertData = transactionsToCreate.map((data) => {
+        return { ...data };
+      });
+
+      console.log({ bulkInsertData });
+
+      const query = this.transactionRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Transaction)
+        .values(bulkInsertData);
+      await query.execute();
+
+      //   const createdTransactions: Transaction[] = await Promise.all(
+      //     transactionsToCreate.map((data: Transaction) =>
+      //       this.transactionRepository.create(data),
+      //     ),
+      //   );
+      //   await Promise.all(
+      //     createdTransactions.map((transaction: Transaction) =>
+      //       this.transactionRepository.save(transaction),
+      //     ),
+      //   );
 
       await this.redisService.ltrim('transaction', batchSize, -1);
 
