@@ -57,6 +57,6 @@ import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerContextMiddleware).forRoutes('*');
+    // consumer.apply(LoggerContextMiddleware).forRoutes('*');
   }
 }
