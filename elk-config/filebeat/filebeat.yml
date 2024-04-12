@@ -1,0 +1,23 @@
+filebeat.inputs:
+  - type: log
+    paths:
+      - /usr/share/filebeat/logs/info/**.log
+    tags: ['info']
+
+  - type: log
+    paths:
+      - /usr/share/filebeat/logs/warn/**.log
+    tags: ['warn']
+
+  - type: log
+    paths:
+      - /usr/share/filebeat/logs/error/**.log
+    tags: ['error']
+
+#-------------------------- Elasticsearch output ------------------------------
+output.elasticsearch:
+  hosts: ['http://elasticsearch:9200']
+
+#============================== Kibana =====================================
+setup.kibana:
+  host: 'http://kibana:5601'

@@ -17,6 +17,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src:/app/src
+      - ./src/logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -106,6 +107,54 @@ services:
     networks:
       - ticket
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.11
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - transport.host=0.0.0.0
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+    volumes:
+      - test_data:/usr/share/elasticsearch/data/
+      - ./elk-config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    networks:
+      - ticket
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.11
+    container_name: kibana
+    volumes:
+      - ./elk-config/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kb_data:/usr/share/kibana/data
+    ports:
+      - '5601:5601'
+    networks:
+      - ticket
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.11
+    container_name: filebeat
+    volumes:
+      - ./elk-config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./src/logs:/usr/share/filebeat/logs:ro
+    networks:
+      - ticket
+    depends_on:
+      - elasticsearch
+
 networks:
   ticket:
     name: ticketingnetwork
+
+volumes:
+  test_data:
+  kb_data:
