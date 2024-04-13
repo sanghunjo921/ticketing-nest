@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './auth.guard.service';
 import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from './entity/refreshToken.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         signOptions: { expiresIn: '10m' },
       }),
     }),
-    TypeOrmModule.forFeature([RefreshToken]),
+    TypeOrmModule.forFeature([RefreshToken, DiscountRate]),
   ],
   controllers: [AuthController],
   providers: [
