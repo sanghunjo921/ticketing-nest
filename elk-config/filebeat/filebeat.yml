@@ -17,6 +17,11 @@ filebeat.inputs:
 #-------------------------- Elasticsearch output ------------------------------
 output.elasticsearch:
   hosts: ['http://elasticsearch:9200']
+# output:
+#   logstash:
+#     enabled: true
+#     hosts:
+#       - logstash:5044
 
 #============================== Kibana =====================================
 setup.kibana:

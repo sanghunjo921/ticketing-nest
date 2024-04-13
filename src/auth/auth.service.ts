@@ -1,36 +1,68 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { v4 as uuidv4 } from 'uuid';
 import { SigninResDto, SignupResDto } from './dto/res.dto';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entity/refreshToken.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { TokenType } from './type/auth.type';
+import { User } from 'src/user/entity/user.entity';
+import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly dataSource: DataSource,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    @InjectRepository(DiscountRate)
+    private readonly discountRepository: Repository<DiscountRate>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
   async signUp(email: string, password: string): Promise<SignupResDto> {
-    const user = await this.userService.findOneByEmail(email);
-    if (user) {
-      throw new BadRequestException('User already exists');
-    }
-    const newUser = await this.userService.create(email, password);
+    const queryRunner = this.dataSource.createQueryRunner(); // 얘를 통해 디비에 접근 및 종료
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const refreshToken = await this.createOrUpdateRefreshToken(
-      newUser.id,
-      this.generateToken(newUser.id, TokenType.REFRESH),
-    );
-    return {
-      accessToken: this.generateToken(newUser.id, TokenType.ACCESS),
-      refreshToken: refreshToken.token,
-    };
+    let error;
+
+    try {
+      const user = await this.userService.findOneByEmail(email);
+      if (user) {
+        throw new BadRequestException('User already exists');
+      }
+      const newUser = queryRunner.manager.create(User, { email, password });
+      const discountRate = await this.discountRepository.findOne({
+        where: {
+          membershipLevel: 'bronze',
+        },
+      });
+      newUser.discountRate = discountRate;
+      await queryRunner.manager.save(newUser);
+
+      const accessToken = this.generateToken(newUser.id, TokenType.ACCESS);
+      const refreshToken = this.generateToken(newUser.id, TokenType.REFRESH);
+      const refreshEntity = queryRunner.manager.create(RefreshToken, {
+        token: refreshToken,
+        user: { id: newUser.id },
+      });
+
+      await queryRunner.manager.save(refreshEntity);
+
+      queryRunner.commitTransaction();
+
+      return {
+        accessToken,
+        refreshToken,
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      error = err;
+    } finally {
+      await queryRunner.release();
+      if (error) throw error;
+    }
   }
 
   async signIn(email: string, password: string): Promise<SigninResDto> {

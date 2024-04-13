@@ -46,7 +46,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const decoded = this.jwtService.decode(token);
 
-    console.log({ decoded });
+    console.log({ decoded, token });
 
     if (!url.includes('refresh') && decoded.type === TokenType.REFRESH) {
       throw new UnauthorizedException('refresh error');

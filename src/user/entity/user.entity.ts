@@ -55,9 +55,9 @@ export class User {
   coupons: Coupon[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
+  @JoinColumn()
   transactions: Transaction[];
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
-  @JoinColumn()
   refreshToken: RefreshToken;
 }
