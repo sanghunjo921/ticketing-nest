@@ -118,6 +118,7 @@ services:
       - xpack.monitoring.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms1g -Xmx1g'
     volumes:
       - test_data:/usr/share/elasticsearch/data/
       - ./elk-config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -126,21 +127,6 @@ services:
       - '9300:9300'
     networks:
       - ticket
-
-  # logstash:
-  #   image: docker.elastic.co/logstash/logstash:7.17.11
-  #   container_name: logstash
-  #   ports:
-  #     - '5044:5044'
-  #     - '9600:9600'
-  #   volumes:
-  #     - ./elk-config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-  #     - ./elk-config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
-  #     - ls_data:/usr/share/logstash/data
-  #   networks:
-  #     - ticket
-  #   depends_on:
-  #     - elasticsearch
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.11
@@ -155,6 +141,20 @@ services:
     depends_on:
       - elasticsearch
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.11
+    container_name: logstash
+    volumes:
+      - ./elk-config/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./elk-config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - '5044:5044'
+    networks:
+      - ticket
+    depends_on:
+      - elasticsearch
+      - kibana
+
   filebeat:
     image: docker.elastic.co/beats/filebeat:7.17.11
     container_name: filebeat
@@ -164,8 +164,8 @@ services:
     networks:
       - ticket
     depends_on:
-      - elasticsearch
-      # - logstash
+      # - elasticsearch
+      - logstash
 
 networks:
   ticket:
