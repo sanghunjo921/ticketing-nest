@@ -18,24 +18,31 @@ export class TicketService {
     private readonly redisService: Redis,
   ) {}
   async findAll(page: number, size: number) {
-    const skip = (page - 1) * size;
-    const ticketKey = `tickets_page_${page}`;
+    try {
+      const skip = (page - 1) * size;
+      const ticketKey = `tickets_page_${page}`;
 
-    this.logger.log('Access to Redis to retrieve ticket data');
-    let tickets = JSON.parse(await this.redisService.get(ticketKey));
-    this.logger.log('Finished retrieving ticket data from redis');
-    if (!tickets) {
-      this.logger.log('No cache for ticket data. Fetching from db');
-      tickets = await this.ticketRepository.find({ skip: skip, take: size });
-      this.logger.log('Finished retrieving ticket from db');
+      this.logger.log('Access to Redis to retrieve ticket data');
+      let tickets = JSON.parse(await this.redisService.get(ticketKey));
+      this.logger.log('Finished retrieving ticket data from redis');
 
-      if (tickets || tickets.length !== 0) {
-        this.logger.log('Trying to cache tickets in cache');
-        await this.redisService.set(ticketKey, JSON.stringify(tickets));
-        this.logger.log('Finished caching tickets');
+      if (!tickets) {
+        this.logger.log('No cache for ticket data. Fetching from db');
+        tickets = await this.ticketRepository.find({ skip: skip, take: size });
+        this.logger.log('Finished retrieving ticket from db');
+
+        if (tickets && tickets.length !== 0) {
+          this.logger.log('Trying to cache tickets in cache');
+          await this.redisService.set(ticketKey, JSON.stringify(tickets));
+          this.logger.log('Finished caching tickets');
+        }
       }
+
+      return tickets;
+    } catch (error) {
+      this.logger.error('An error occurred while fetching tickets:', error);
+      throw error;
     }
-    return tickets;
   }
 
   async findOne(id: number): Promise<FindTicketResDto> {
