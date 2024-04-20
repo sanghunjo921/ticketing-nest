@@ -8,8 +8,11 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
   ValidationPipe,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import {
   ApiDeleteResponse,
@@ -18,7 +21,7 @@ import {
   ApiPostResponse,
   ApiUpdateResponse,
 } from 'src/common/decorator/doc-res.decorator';
-import { Public } from 'src/common/decorator/public.decorator';
+import { Public, Test } from 'src/common/decorator/public.decorator';
 import { PageReqDto } from 'src/common/dto/req.dto';
 import { PageResDto } from 'src/common/dto/res.dto';
 import {
@@ -33,6 +36,7 @@ import {
   UpdateTicketResDto,
 } from './dto/res.dto';
 import { TicketService } from './ticket.service';
+import { Express } from 'express';
 
 @Controller('ticket')
 @ApiTags('Ticket')
@@ -46,7 +50,7 @@ export class TicketController {
   create(
     @Body()
     { title, desc, price, remaining_number, status }: CreateTicketReqDto,
-  ): CreateTicketResDto {
+  ): CreateTicketResDto | string {
     return this.ticketSerivce.create(
       title,
       price,
@@ -54,6 +58,16 @@ export class TicketController {
       desc,
       status,
     );
+  }
+
+  @Test()
+  @Patch('upload/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile() image: Express.Multer.File,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.ticketSerivce.uploadFile(image, id);
   }
 
   @Public()
@@ -70,14 +84,14 @@ export class TicketController {
   }
 
   @ApiGetResponse(FindTicketResDto, 'Ticket found successfully')
-  @ApiBearerAuth()
+  @Public()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<FindTicketResDto> {
     return this.ticketSerivce.findOne(id);
   }
 
   @ApiUpdateResponse(UpdateTicketResDto, 'Ticket updated successfully')
-  @ApiBearerAuth()
+  @Public()
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,

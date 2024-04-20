@@ -12,6 +12,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     logger: winstonLogger,
+    cors: true,
   });
 
   const swaggerConfig = new DocumentBuilder()

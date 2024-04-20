@@ -51,6 +51,10 @@ export class CreateTicketReqDto {
     required: true,
   })
   remaining_number: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  imagePath?: string;
 }
 
 export class UpdateTicketReqDto {
@@ -79,6 +83,10 @@ export class UpdateTicketReqDto {
   @IsOptional()
   @ApiPropertyOptional()
   remaining_number?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  imagePath?: string;
 }
 
 export class DeleteTicketReqDto {
