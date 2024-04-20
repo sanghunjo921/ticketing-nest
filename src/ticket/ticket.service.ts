@@ -7,6 +7,8 @@ import { Ticket } from './entity/ticket.entity';
 import { Status } from './type/ticket.enum';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
+import path from 'path';
+import fs from 'fs';
 
 @Injectable()
 export class TicketService {
@@ -47,6 +49,21 @@ export class TicketService {
 
   async findOne(id: number): Promise<FindTicketResDto> {
     return this.ticketRepository.findOneBy({ id });
+  }
+
+  async uploadFile(image: Express.Multer.File, id: number) {
+    const ticket = await this.ticketRepository.findOneBy({ id });
+
+    console.log(image);
+
+    if (image) {
+      const imagePath = path.join('src/images', image.filename);
+
+      await fs.promises.copyFile(image.path, imagePath);
+      ticket.imagePath = imagePath;
+
+      await this.ticketRepository.save(ticket);
+    }
   }
 
   async create(
