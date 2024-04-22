@@ -13,6 +13,8 @@ export class FindTicketResDto {
     required: false,
   })
   desc?: string;
+
+  imagePath?: string;
 }
 
 export class CreateTicketResDto {}

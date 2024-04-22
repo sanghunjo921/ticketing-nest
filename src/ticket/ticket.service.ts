@@ -48,22 +48,39 @@ export class TicketService {
   }
 
   async findOne(id: number): Promise<FindTicketResDto> {
-    return this.ticketRepository.findOneBy({ id });
-  }
-
-  async uploadFile(image: Express.Multer.File, id: number) {
     const ticket = await this.ticketRepository.findOneBy({ id });
 
-    console.log(image);
+    return ticket;
+  }
 
-    if (image) {
-      const imagePath = path.join('src/images', image.filename);
-
-      await fs.promises.copyFile(image.path, imagePath);
-      ticket.imagePath = imagePath;
-
-      await this.ticketRepository.save(ticket);
+  private getImageBase64(imagePath: string): string {
+    try {
+      const image = fs.readFileSync(imagePath);
+      return Buffer.from(image).toString('base64');
+    } catch (error) {
+      console.error('Error reading image file:', error);
+      return null;
     }
+  }
+
+  async uploadFile(images: Array<Express.Multer.File>, id: number) {
+    const ticket = await this.ticketRepository.findOneBy({ id });
+
+    const result = [];
+
+    images.forEach((image) => {
+      const res = {
+        originalname: image.originalname,
+        filename: image.filename,
+      };
+      result.push(res);
+    });
+
+    ticket.imagePath = path.join(images[0].destination, images[0].filename);
+
+    await this.ticketRepository.save(ticket);
+
+    return { result };
   }
 
   async create(

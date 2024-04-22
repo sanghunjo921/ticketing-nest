@@ -1,15 +1,17 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import {
   DocumentBuilder,
   SwaggerCustomOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { winstonLogger } from './config/logger.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     logger: winstonLogger,
     cors: true,
@@ -36,6 +38,7 @@ async function bootstrap() {
     }),
   );
 
+  app.useStaticAssets(join(__dirname, '..', 'images'));
   await app.listen(3000);
   console.log(`App is running on: 3000`);
 }
