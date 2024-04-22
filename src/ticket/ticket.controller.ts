@@ -10,9 +10,9 @@ import {
   Query,
   UseInterceptors,
   ValidationPipe,
-  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import {
   ApiDeleteResponse,
@@ -37,6 +37,8 @@ import {
 } from './dto/res.dto';
 import { TicketService } from './ticket.service';
 import { Express } from 'express';
+import { diskStorage } from 'multer';
+import { editFileName, imageFileFilter } from 'src/config/multerOptions';
 
 @Controller('ticket')
 @ApiTags('Ticket')
@@ -61,13 +63,21 @@ export class TicketController {
   }
 
   @Test()
-  @Patch('upload/:id')
-  @UseInterceptors(FileInterceptor('file'))
+  @Post('upload/:id')
+  @UseInterceptors(
+    FilesInterceptor('files', 5, {
+      storage: diskStorage({
+        destination: './images',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
   async uploadFile(
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFiles() images: Array<Express.Multer.File>,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.ticketSerivce.uploadFile(image, id);
+    return this.ticketSerivce.uploadFile(images, id);
   }
 
   @Public()
