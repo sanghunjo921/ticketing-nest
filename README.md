@@ -31,7 +31,7 @@
 
 ## 로깅 파이프라인
 <p align="center">
-  <img src="./log.png" alt="로깅 파이프라인">
+  <img src="./logging.png" alt="로깅 파이프라인">
 </p>
 
 ### 로깅 및 모니터링
