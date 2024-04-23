@@ -20,3 +20,8 @@ export class FindTicketResDto {
 export class CreateTicketResDto {}
 
 export class UpdateTicketResDto {}
+
+export class GetImageResDto {
+  @ApiProperty()
+  image: string;
+}

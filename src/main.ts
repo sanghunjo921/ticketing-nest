@@ -38,7 +38,10 @@ async function bootstrap() {
     }),
   );
 
-  app.useStaticAssets(join(__dirname, '..', 'images'));
+  app.useStaticAssets(join(__dirname, '..', 'images'), {
+    prefix: '/images/',
+  });
+  console.log(join(__dirname, '..', 'images'));
   await app.listen(3000);
   console.log(`App is running on: 3000`);
 }

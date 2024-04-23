@@ -27,12 +27,14 @@ import { PageResDto } from 'src/common/dto/res.dto';
 import {
   CreateTicketReqDto,
   DeleteTicketReqDto,
+  FilteredTicketReqDto,
   FindTicketReqDto,
   UpdateTicketReqDto,
 } from './dto/req.dto';
 import {
   CreateTicketResDto,
   FindTicketResDto,
+  GetImageResDto,
   UpdateTicketResDto,
 } from './dto/res.dto';
 import { TicketService } from './ticket.service';
@@ -80,6 +82,12 @@ export class TicketController {
     return this.ticketSerivce.uploadFile(images, id);
   }
 
+  @Test()
+  @Get(':id/images')
+  getImage(@Param('id', ParseIntPipe) id: number): Promise<GetImageResDto> {
+    return this.ticketSerivce.getImage(id);
+  }
+
   @Public()
   @Post('dummyTikcets')
   createBulk() {
@@ -98,6 +106,15 @@ export class TicketController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<FindTicketResDto> {
     return this.ticketSerivce.findOne(id);
+  }
+
+  @Public()
+  @Get('search/filtered')
+  getFilteredTickets(
+    @Query() { page, size }: PageReqDto,
+    @Query() { searchTerm }: FilteredTicketReqDto,
+  ) {
+    return this.ticketSerivce.getFilteredTickets(page, size, searchTerm);
   }
 
   @ApiUpdateResponse(UpdateTicketResDto, 'Ticket updated successfully')

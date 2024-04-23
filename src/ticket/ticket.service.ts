@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UpdateTicketReqDto } from './dto/req.dto';
-import { FindTicketResDto } from './dto/res.dto';
+import { Like, Repository } from 'typeorm';
+import { FilteredTicketReqDto, UpdateTicketReqDto } from './dto/req.dto';
+import { FindTicketResDto, GetImageResDto } from './dto/res.dto';
 import { Ticket } from './entity/ticket.entity';
 import { Status } from './type/ticket.enum';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
@@ -53,12 +53,41 @@ export class TicketService {
     return ticket;
   }
 
-  private getImageBase64(imagePath: string): string {
+  async getFilteredTickets(page: number, size: number, searchTerm: string) {
     try {
-      const image = fs.readFileSync(imagePath);
+      console.log({ page });
+      const skip = (page - 1) * size;
+
+      const tickets = await this.ticketRepository.find({
+        where: {
+          title: Like(`%${searchTerm}%`),
+        },
+        skip: skip,
+        take: size,
+      });
+
+      return tickets;
+    } catch (error) {
+      this.logger.error('An error occurred while fetching tickets:', error);
+      throw error;
+    }
+  }
+
+  async getImage(id: number): Promise<GetImageResDto> {
+    const ticket = await this.ticketRepository.findOneBy({ id });
+
+    console.log(ticket.imagePath);
+    const image = await this.getImageBase64(ticket.imagePath);
+
+    return { image };
+  }
+
+  private async getImageBase64(imagePath: string): Promise<string> {
+    try {
+      const image = await fs.promises.readFile(imagePath);
       return Buffer.from(image).toString('base64');
     } catch (error) {
-      console.error('Error reading image file:', error);
+      this.logger.error('error when fetching image', error);
       return null;
     }
   }
