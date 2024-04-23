@@ -9,7 +9,6 @@
   <img src="./structure.png" alt="프로젝트 구조">
 </p>
 
-
 ## 주요 기능 및 구현 내용
 
 ### 티켓 조회 및 예약
@@ -29,6 +28,11 @@
 - Refresh Token은 데이터베이스에 저장되어 stateful하게 관리되며, Access Token은 stateless하게 관리됩니다.
 - 컨트롤러에는 토큰이 없을 시 Unauthorized Error를 반환하도록 구현되었으며, 유저의 역할에 따라 인증 가드를 설정하여 권한을 관리하였습니다.
 - 사용자 생성(signup) 시 데이터베이스 트랜잭션을 사용하여 롤백 기능을 구현하였습니다.
+
+## 로깅 파이프라인
+<p align="center">
+  <img src="./log.png" alt="로깅 파이프라인">
+</p>
 
 ### 로깅 및 모니터링
 - Winston을 사용하여 로그를 수준별로 저장하고, Docker Volume을 활용하여 Filebeat와 연동하여 로그를 수집하였습니다.
