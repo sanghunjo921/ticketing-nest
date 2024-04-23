@@ -96,3 +96,11 @@ export class DeleteTicketReqDto {
   @IsUUID()
   id: string;
 }
+
+export class FilteredTicketReqDto {
+  @ApiProperty({
+    required: true,
+    type: String,
+  })
+  searchTerm: string;
+}
