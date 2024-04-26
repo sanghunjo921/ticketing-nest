@@ -28,6 +28,17 @@
 - Redis 트랜잭션 처리를 통해 중복 키 위반을 방지하였으며, RabbitMQ를 이용하여 구매 완료 이메일을 비동기적으로 전송하였습니다.
 - mget과 mset을 사용하여 redis 접근 횟수를 최소화 했습니다.
 
+### 구매내역 저장 배치처리
+- 구매가 완료 된 시점에 redis에 구매내역과 관련 된 정보를 캐싱했습니다.
+- batch 서버에서 1분마다 cron job이 돌면서 redis에 캐싱 된 구매내역 정보를 확인하고 10분이 경과 된 데이터는 DB에 저장합니다.
+- batch processing의 최적화를 위해 createQueryBuilder를 사용해 한번에 DB에 주입했습니다.
+
+### 이미지 업로드 및 저장
+- multer 라이브러리를 사용해서 티켓의 이미지를 업로드 합니다.
+- 티켓의 이미지는 서버에 static하게 저장됩니다. Docker container 내부에 저장되기 때문에 로컬에서 확인하기 위해 volume 마운팅을 걸었습니다.
+- 티켓 entity에는 이미지의 경로만 저장하여 클라이언트에 보내주도록 구현했습니다.
+
+
 ### 인증 및 권한 관리
 - Access Token의 유효기간은 10분으로 설정되어 있고, Refresh Token의 유효기간은 30일입니다.
 - Refresh Token은 데이터베이스에 저장되어 stateful하게 관리되며, Access Token은 stateless하게 관리됩니다.
