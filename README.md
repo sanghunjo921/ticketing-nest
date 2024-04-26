@@ -57,14 +57,13 @@
 <p align="center">
   <img src="./ecs.png" alt="ecs 구조도">
 </p>
+
 ### AWS ECS 배포 전략
 - Github Actions으로 main branch에 push하면 ECR에 최신 이미지가 올라가도록 자동화 하였습니다.
 - EC2 두대를 띄워서 각각 Redis와 DB 환경을 설정했습니다. 
 - ECR에서 최신 이미지를 pull하도록 task definition을 작성하고 Redis와 DB와 연결 되도록 환경변수를 설정했습니다.
 - Fargate 형식의 cluster를 만들고 서비스를 생성할때 application load balancer를 설정하여 로드가 분산되도록 하고 auto scaling 정책을 설정해서 CPU 사용량이 60%가 넘어가면 자동으로 수평 확장되도록 했습니다.
 - Terraform으로 AWS ECS 자원을 만들어서 git으로 형상 관리합니다.
-
-
 ## 사용 기술 스택
 
 - 프레임워크: NestJS
