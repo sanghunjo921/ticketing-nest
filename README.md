@@ -8,7 +8,7 @@
 - Redis
 - TypeORM
 
-## 프로젝트 구조
+## 개발 환경 구조
 <p align="center">
   <img src="./structure.png" alt="프로젝트 구조">
 </p>
@@ -53,7 +53,7 @@
 
 ## 로드 테스트
 - Locust의 Faster Client를 활용하여 로드 테스트를 수행하였습니다. 
-## 배포 구조도 
+## 배포 환경 구조
 <p align="center">
   <img src="./ecs.png" alt="ecs 구조도">
 </p>
