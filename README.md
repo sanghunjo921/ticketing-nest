@@ -53,7 +53,10 @@
 
 ## 로드 테스트
 - Locust의 Faster Client를 활용하여 로드 테스트를 수행하였습니다. 
-
+## AWS ECS 배포 
+<p align="center">
+  <img src="./ecs.png" alt="ecs 구조도">
+</p>
 
 ## 사용 기술 스택
 
