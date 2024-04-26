@@ -78,7 +78,7 @@
 - 로드 테스트: Locust
 - CI/CD: Github Actions
 - 배포: AWS ECS, ECR, EC2
-- 배포 자원 프로비저닝: Terraform
+- 프로비저닝 툴: Terraform
 
 ## Quickstart
 ### 개발 환경 설정
