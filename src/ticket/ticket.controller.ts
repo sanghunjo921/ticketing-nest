@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   ValidationPipe,
   UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
@@ -66,20 +67,21 @@ export class TicketController {
 
   @Test()
   @Post('upload/:id')
-  @UseInterceptors(
-    FilesInterceptor('files', 5, {
-      storage: diskStorage({
-        destination: './images',
-        filename: editFileName,
-      }),
-      fileFilter: imageFileFilter,
-    }),
-  )
+  // @UseInterceptors(
+  //   FilesInterceptor('files', 5, {
+  //     storage: diskStorage({
+  //       destination: './images',
+  //       filename: editFileName,
+  //     }),
+  //     fileFilter: imageFileFilter,
+  //   }),
+  // )
+  @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @UploadedFiles() images: Array<Express.Multer.File>,
+    @UploadedFile() image: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    return this.ticketSerivce.uploadFile(images, id);
+    return this.ticketSerivce.uploadFile(image, id);
   }
 
   @Test()
