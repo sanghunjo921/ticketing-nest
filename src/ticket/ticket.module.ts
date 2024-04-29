@@ -7,12 +7,14 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { WinstonModule } from 'nest-winston';
 import { winstonLogger } from 'src/config/logger.config';
 import { MulterModule } from '@nestjs/platform-express';
+import { AwsModule } from 'src/aws/aws.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Ticket]),
     RedisModule,
     // MulterModule.register({ dest: './images' }),
+    AwsModule,
   ],
   providers: [TicketService],
   controllers: [TicketController],
