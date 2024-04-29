@@ -12,7 +12,7 @@ import { MulterModule } from '@nestjs/platform-express';
   imports: [
     TypeOrmModule.forFeature([Ticket]),
     RedisModule,
-    MulterModule.register({ dest: './images' }),
+    // MulterModule.register({ dest: './images' }),
   ],
   providers: [TicketService],
   controllers: [TicketController],

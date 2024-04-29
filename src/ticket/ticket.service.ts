@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { FilteredTicketReqDto, UpdateTicketReqDto } from './dto/req.dto';
@@ -9,6 +15,7 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import path from 'path';
 import fs from 'fs';
+import { AwsService } from 'src/aws/aws.service';
 
 @Injectable()
 export class TicketService {
@@ -18,6 +25,7 @@ export class TicketService {
     private readonly ticketRepository: Repository<Ticket>,
     @InjectRedis()
     private readonly redisService: Redis,
+    @Inject(AwsService) private readonly awsService: AwsService,
   ) {}
   async findAll(page: number, size: number) {
     try {
@@ -92,24 +100,32 @@ export class TicketService {
     }
   }
 
-  async uploadFile(images: Array<Express.Multer.File>, id: number) {
+  async uploadFile(image: Express.Multer.File, id: number) {
     const ticket = await this.ticketRepository.findOneBy({ id });
 
-    const result = [];
+    // const result = [];
 
-    images.forEach((image) => {
-      const res = {
-        originalname: image.originalname,
-        filename: image.filename,
-      };
-      result.push(res);
-    });
+    // images.forEach((image) => {
+    //   const res = {
+    //     originalname: image.originalname,
+    //     filename: image.filename,
+    //   };
+    //   result.push(res);
+    // });
 
-    ticket.imagePath = path.join(images[0].destination, images[0].filename);
+    const ext = image.originalname.split('.').pop();
+
+    const imageUrl = await this.awsService.imageUploadToS3(
+      `${id}.${ext}`,
+      image,
+      ext,
+    );
+
+    ticket.imagePath = imageUrl;
 
     await this.ticketRepository.save(ticket);
 
-    return { result };
+    return { imageUrl };
   }
 
   async create(
