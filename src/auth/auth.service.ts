@@ -50,7 +50,7 @@ export class AuthService {
 
       await queryRunner.manager.save(refreshEntity);
 
-      queryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
 
       return {
         accessToken,

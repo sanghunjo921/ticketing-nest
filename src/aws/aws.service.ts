@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class AwsService {
@@ -21,6 +24,7 @@ export class AwsService {
     file: Express.Multer.File,
     ext: string,
   ) {
+    console.log(process.env.AWS_REGION);
     const command = new PutObjectCommand({
       Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
       Key: fileName,
