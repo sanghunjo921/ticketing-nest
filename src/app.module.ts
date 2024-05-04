@@ -11,12 +11,13 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
 import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
+import awsConfig from './config/aws.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [dbConfig, jwtConfig],
+      load: [dbConfig, jwtConfig, awsConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
