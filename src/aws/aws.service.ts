@@ -11,10 +11,10 @@ export class AwsService {
 
   constructor(private configService: ConfigService) {
     this.s3Client = new S3Client({
-      region: process.env.AWS_REGION,
+      region: configService.get('aws.region'),
       credentials: {
-        accessKeyId: process.env.AWS_S3_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+        accessKeyId: configService.get('aws.access_key'),
+        secretAccessKey: configService.get('aws.secret_key'),
       },
     });
   }
@@ -26,7 +26,7 @@ export class AwsService {
   ) {
     console.log(process.env.AWS_REGION);
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Bucket: this.configService.get('aws.bucket_name'),
       Key: fileName,
       Body: file.buffer,
       ACL: 'public-read',
