@@ -5,6 +5,7 @@ import {
   Post,
   Get,
   Headers,
+  Res,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,6 +26,7 @@ import { Public } from 'src/common/decorator/public.decorator';
 import { AuthService } from './auth.service';
 import { SigninReqDto, SignupReqDto } from './dto/req.dto';
 import { RefreshResDto, SigninResDto, SignupResDto } from './dto/res.dto';
+import { Response } from 'express';
 
 @Controller()
 @ApiExtraModels(SignupResDto, SigninResDto, RefreshResDto)
@@ -37,11 +39,12 @@ export class AuthController {
   @Post('signup')
   async signup(
     @Body() { email, password, passwordConfirm }: SignupReqDto,
+    @Res() res: Response,
   ): Promise<SignupResDto> {
     if (password !== passwordConfirm) {
       throw new BadRequestException('Passwords do not match');
     }
-    return this.authService.signUp(email, password);
+    return this.authService.signUp(email, password, res);
   }
 
   @Public()
@@ -49,8 +52,9 @@ export class AuthController {
   @Post('signin')
   async signin(
     @Body() { email, password }: SigninReqDto,
+    @Res() res: Response,
   ): Promise<SigninResDto> {
-    return this.authService.signIn(email, password);
+    return this.authService.signIn(email, password, res);
   }
 
   @ApiBearerAuth()
@@ -59,8 +63,9 @@ export class AuthController {
   async refresh(
     @Headers('authorization') authorization,
     @AuthUser() user: AuthUserType,
+    @Res() res: Response,
   ) {
     const token = /Bearer\s(.+)/.exec(authorization)?.[1];
-    return this.authService.refresh(user.id, token);
+    return this.authService.refresh(user.id, token, res);
   }
 }
