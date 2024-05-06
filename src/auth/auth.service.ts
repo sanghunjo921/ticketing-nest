@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Res } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SigninResDto, SignupResDto } from './dto/res.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -8,6 +8,7 @@ import { DataSource, Repository } from 'typeorm';
 import { TokenType } from './type/auth.type';
 import { User } from 'src/user/entity/user.entity';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,11 @@ export class AuthService {
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
-  async signUp(email: string, password: string): Promise<SignupResDto> {
+  async signUp(
+    email: string,
+    password: string,
+    @Res() res: Response,
+  ): Promise<SignupResDto> {
     const queryRunner = this.dataSource.createQueryRunner(); // 얘를 통해 디비에 접근 및 종료
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -43,6 +48,9 @@ export class AuthService {
 
       const accessToken = this.generateToken(newUser.id, TokenType.ACCESS);
       const refreshToken = this.generateToken(newUser.id, TokenType.REFRESH);
+
+      this.sendAuthCookies(res, accessToken, refreshToken);
+
       const refreshEntity = queryRunner.manager.create(RefreshToken, {
         token: refreshToken,
         user: { id: newUser.id },
@@ -53,8 +61,9 @@ export class AuthService {
       await queryRunner.commitTransaction();
 
       return {
-        accessToken,
-        refreshToken,
+        userId: newUser.id,
+        // accessToken,
+        // refreshToken,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -65,7 +74,11 @@ export class AuthService {
     }
   }
 
-  async signIn(email: string, password: string): Promise<SigninResDto> {
+  async signIn(
+    email: string,
+    password: string,
+    @Res() res: Response,
+  ): Promise<SigninResDto> {
     const user = await this.userService.findOneByEmail(email);
     if (!user) {
       throw new BadRequestException('User does not exist');
@@ -80,13 +93,18 @@ export class AuthService {
       this.generateToken(user.id, TokenType.REFRESH),
     );
 
+    const accessToken = this.generateToken(user.id, TokenType.ACCESS);
+
+    this.sendAuthCookies(res, accessToken, refreshToken.token);
+
     return {
-      accessToken: this.generateToken(user.id, TokenType.ACCESS),
-      refreshToken: refreshToken.token,
+      userId: user.id,
+      // accessToken: this.generateToken(user.id, TokenType.ACCESS),
+      // refreshToken: refreshToken.token,
     };
   }
 
-  async refresh(userId: string, token: string) {
+  async refresh(userId: string, token: string, @Res() res: Response) {
     const refresh = await this.refreshTokenRepository.findOneBy({ token });
 
     if (!refresh) {
@@ -98,9 +116,14 @@ export class AuthService {
       this.generateToken(userId, TokenType.REFRESH),
     );
 
+    const accessToken = this.generateToken(userId, TokenType.ACCESS);
+
+    this.sendAuthCookies(res, accessToken, refreshToken.token);
+
     return {
-      accessToken: this.generateToken(userId, TokenType.ACCESS),
-      refreshToken: refreshToken.token,
+      userId,
+      // accessToken: this.generateToken(userId, TokenType.ACCESS),
+      // refreshToken: refreshToken.token,
     };
   }
 
@@ -132,5 +155,23 @@ export class AuthService {
       });
     }
     return this.refreshTokenRepository.save(refreshToken);
+  }
+
+  private sendAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ): void {
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
   }
 }
