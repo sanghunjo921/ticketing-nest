@@ -9,6 +9,7 @@ import {
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { winstonLogger } from './config/logger.config';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -41,6 +42,14 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'images'), {
     prefix: '/images/',
   });
+
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
+
+  // app.use(cookieParser())
+
   console.log(join(__dirname, '..', 'images'));
   await app.listen(3000);
   console.log(`App is running on: 3000`);
