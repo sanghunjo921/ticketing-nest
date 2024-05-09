@@ -39,7 +39,7 @@ export class AuthController {
   @Post('signup')
   async signup(
     @Body() { email, password, passwordConfirm }: SignupReqDto,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<SignupResDto> {
     if (password !== passwordConfirm) {
       throw new BadRequestException('Passwords do not match');
@@ -52,7 +52,7 @@ export class AuthController {
   @Post('signin')
   async signin(
     @Body() { email, password }: SigninReqDto,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<SigninResDto> {
     return this.authService.signIn(email, password, res);
   }
@@ -63,7 +63,7 @@ export class AuthController {
   async refresh(
     @Headers('authorization') authorization,
     @AuthUser() user: AuthUserType,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const token = /Bearer\s(.+)/.exec(authorization)?.[1];
     return this.authService.refresh(user.id, token, res);

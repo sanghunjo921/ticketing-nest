@@ -12,12 +12,14 @@ import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
 import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
 import awsConfig from './config/aws.config';
+import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [dbConfig, jwtConfig, awsConfig],
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -53,6 +55,7 @@ import awsConfig from './config/aws.config';
     CouponModule,
     DiscountRateModule,
     RabbitMqModule,
+    AwsModule,
   ],
   providers: [Logger],
 })

@@ -24,7 +24,7 @@ export class AuthService {
   async signUp(
     email: string,
     password: string,
-    @Res() res: Response,
+    res: Response,
   ): Promise<SignupResDto> {
     const queryRunner = this.dataSource.createQueryRunner(); // 얘를 통해 디비에 접근 및 종료
     await queryRunner.connect();
@@ -62,8 +62,6 @@ export class AuthService {
 
       return {
         userId: newUser.id,
-        // accessToken,
-        // refreshToken,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -77,7 +75,7 @@ export class AuthService {
   async signIn(
     email: string,
     password: string,
-    @Res() res: Response,
+    res: Response,
   ): Promise<SigninResDto> {
     const user = await this.userService.findOneByEmail(email);
     if (!user) {
@@ -99,12 +97,10 @@ export class AuthService {
 
     return {
       userId: user.id,
-      // accessToken: this.generateToken(user.id, TokenType.ACCESS),
-      // refreshToken: refreshToken.token,
     };
   }
 
-  async refresh(userId: string, token: string, @Res() res: Response) {
+  async refresh(userId: string, token: string, res: Response) {
     const refresh = await this.refreshTokenRepository.findOneBy({ token });
 
     if (!refresh) {
@@ -122,8 +118,6 @@ export class AuthService {
 
     return {
       userId,
-      // accessToken: this.generateToken(userId, TokenType.ACCESS),
-      // refreshToken: refreshToken.token,
     };
   }
 
