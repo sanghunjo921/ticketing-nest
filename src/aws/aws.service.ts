@@ -24,7 +24,7 @@ export class AwsService {
     file: Express.Multer.File,
     ext: string,
   ) {
-    console.log(process.env.AWS_REGION);
+    console.log({ region: this.configService.get('aws.region') });
     const command = new PutObjectCommand({
       Bucket: this.configService.get('aws.bucket_name'),
       Key: fileName,
