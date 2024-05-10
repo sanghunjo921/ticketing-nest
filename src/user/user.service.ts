@@ -47,7 +47,6 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<UserResDto> {
-    console.log({ id });
     return this.userRepository.findOneBy({ id });
   }
 

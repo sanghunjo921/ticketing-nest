@@ -17,6 +17,7 @@ import {
 } from 'typeorm';
 import { Membership, Role } from '../type/user.enum';
 import { Transaction } from './transaction.entity';
+import { IsOptional } from 'class-validator';
 
 @Entity()
 export class User {
@@ -28,8 +29,12 @@ export class User {
   })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   password: string;
+
+  @Column({ default: 'none' })
+  provider: string;
 
   @Column({ type: 'enum', enum: Role })
   role: Role = Role.CONSUMER;

@@ -10,6 +10,8 @@ import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from './entity/refreshToken.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
+// import { GoogleStrategy } from './strategies/google.strategy';
+import { User } from 'src/user/entity/user.entity';
 
 @Module({
   imports: [
@@ -22,10 +24,11 @@ import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
         signOptions: { expiresIn: '10m' },
       }),
     }),
-    TypeOrmModule.forFeature([RefreshToken, DiscountRate]),
+    TypeOrmModule.forFeature([RefreshToken, DiscountRate, User]),
   ],
   controllers: [AuthController],
   providers: [
+    // GoogleStrategy,
     AuthService,
     JwtStrategy,
     {

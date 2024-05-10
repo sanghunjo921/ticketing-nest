@@ -8,7 +8,7 @@ import { DataSource, Repository } from 'typeorm';
 import { TokenType } from './type/auth.type';
 import { User } from 'src/user/entity/user.entity';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +16,8 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectRepository(DiscountRate)
     private readonly discountRepository: Repository<DiscountRate>,
     @InjectRepository(RefreshToken)
@@ -167,5 +169,42 @@ export class AuthService {
       secure: true,
       sameSite: 'none',
     });
+  }
+
+  async findByEmailOrSave(email: string, provider: string): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (user) return user;
+
+      const discountRate = await this.discountRepository.findOne({
+        where: {
+          membershipLevel: 'bronze',
+        },
+      });
+
+      const newUser = this.userRepository.save({
+        email,
+        discountRate,
+        provider,
+      });
+
+      return newUser;
+    } catch (error) {
+      throw new Error('사용자를 찾을 수 없습니다.');
+    }
+  }
+
+  async googleLogin(req, res: Response): Promise<SignupResDto> {
+    const { email, provider } = req.user;
+
+    const user: User = await this.findByEmailOrSave(email, provider);
+    const accessToken = this.generateToken(user.id, TokenType.ACCESS);
+    const refreshToken = this.generateToken(user.id, TokenType.REFRESH);
+
+    this.sendAuthCookies(res, accessToken, refreshToken);
+
+    return {
+      userId: user.id,
+    };
   }
 }

@@ -1,4 +1,6 @@
-export default {
-  url: 'amqp://sanghun:sanghun@ticketing-nest-rabbitmq-1',
-  queue: 'payment_req',
-};
+import { registerAs } from '@nestjs/config';
+
+export default registerAs('rabbitmq', () => ({
+  url: process.env.RABBITMQ_URL,
+  queue: process.env.RABBITMQ_QUEUE,
+}));
