@@ -19,6 +19,7 @@ services:
       - ./src:/app/src
       - ./src/logs:/app/logs
       - ./images:/app/images
+      - ./.env:/app/.env
     depends_on:
       db:
         condition: service_healthy

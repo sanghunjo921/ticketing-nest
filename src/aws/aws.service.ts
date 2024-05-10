@@ -34,6 +34,6 @@ export class AwsService {
     });
 
     await this.s3Client.send(command);
-    return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}/${fileName}`;
+    return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
   }
 }

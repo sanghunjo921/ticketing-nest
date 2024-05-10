@@ -6,6 +6,8 @@ import {
   Get,
   Headers,
   Res,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -26,7 +28,8 @@ import { Public } from 'src/common/decorator/public.decorator';
 import { AuthService } from './auth.service';
 import { SigninReqDto, SignupReqDto } from './dto/req.dto';
 import { RefreshResDto, SigninResDto, SignupResDto } from './dto/res.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 @ApiExtraModels(SignupResDto, SigninResDto, RefreshResDto)
@@ -67,5 +70,19 @@ export class AuthController {
   ) {
     const token = /Bearer\s(.+)/.exec(authorization)?.[1];
     return this.authService.refresh(user.id, token, res);
+  }
+
+  @Get('google/login')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {}
+
+  @Get('oauth2/redirect/google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = await this.authService.googleLogin(req, res);
+    res.redirect('/ticket');
   }
 }

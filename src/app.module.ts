@@ -7,21 +7,25 @@ import dbConfig from './config/postgres.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CouponModule } from './coupon/coupon.module';
 import { DiscountRateModule } from './discount-rate/discount-rate.module';
-import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RedisModule, RedisModuleOptions } from '@liaoliaots/nestjs-redis';
 import jwtConfig from './config/jwt.config';
 import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
 import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
 import awsConfig from './config/aws.config';
 import { AwsModule } from './aws/aws.module';
+import redisConfig from './config/redis.config';
+import rabbitmqConfig from './config/rabbitmq.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: ['.env'],
       isGlobal: true,
-      load: [dbConfig, jwtConfig, awsConfig],
-      envFilePath: '.env',
+      cache: true,
+      load: [dbConfig, jwtConfig, awsConfig, redisConfig, rabbitmqConfig],
     }),
     TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         let typeOrmModuleOptions: TypeOrmModuleOptions = {
@@ -43,10 +47,20 @@ import { AwsModule } from './aws/aws.module';
         return typeOrmModuleOptions;
       },
     }),
-    RedisModule.forRoot({
-      config: {
-        host: 'redis',
-        port: 6379,
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (
+        configService: ConfigService,
+      ): Promise<RedisModuleOptions> => {
+        let redisModuleOptions: RedisModuleOptions = {
+          config: {
+            host: configService.get('redis.host'),
+            port: configService.get('redis.port'),
+          },
+        };
+
+        return redisModuleOptions;
       },
     }),
     AuthModule,

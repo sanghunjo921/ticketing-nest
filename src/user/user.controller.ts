@@ -56,7 +56,8 @@ export class UserController {
   @ApiGetResponse(UserResDto, 'User found successfully')
   @Get(':id')
   findOne(@Param() { id }: FindUserReqDto): Promise<UserResDto> {
-    return this.userService.findOne(id);
+    const user = this.userService.findOne(id);
+    return user;
   }
 
   @ApiPostResponse(CreateUserResDto, 'User is created successfully')
