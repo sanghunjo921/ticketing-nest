@@ -72,10 +72,12 @@ export class AuthController {
     return this.authService.refresh(user.id, token, res);
   }
 
+  @Public()
   @Get('google/login')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
 
+  @Public()
   @Get('oauth2/redirect/google')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(
