@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from './entity/refreshToken.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
-// import { GoogleStrategy } from './strategies/google.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from 'src/user/entity/user.entity';
 
 @Module({
@@ -28,7 +28,7 @@ import { User } from 'src/user/entity/user.entity';
   ],
   controllers: [AuthController],
   providers: [
-    // GoogleStrategy,
+    GoogleStrategy,
     AuthService,
     JwtStrategy,
     {

@@ -19,7 +19,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
-    private readonly userSerivce: UserService,
+    private readonly userService: UserService,
   ) {
     super();
   }
@@ -60,7 +60,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (roles && roles.includes(Role.ADMIN)) {
       const userId = decoded.sub;
 
-      return this.userSerivce.checkAdminRole(userId);
+      return this.userService.checkAdminRole(userId);
     }
 
     return super.canActivate(context);

@@ -203,6 +203,8 @@ export class AuthService {
 
     this.sendAuthCookies(res, accessToken, refreshToken);
 
+    console.log({ accessToken: accessToken, refreshToken: refreshToken });
+
     return {
       userId: user.id,
     };
