@@ -182,11 +182,13 @@ export class AuthService {
         },
       });
 
-      const newUser = this.userRepository.save({
+      const newUser = this.userRepository.create({
         email,
         discountRate,
         provider,
       });
+
+      await this.userRepository.save(newUser);
 
       return newUser;
     } catch (error) {

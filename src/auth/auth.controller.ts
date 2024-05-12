@@ -87,4 +87,20 @@ export class AuthController {
     const userId = await this.authService.googleLogin(req, res);
     res.redirect('/ticket');
   }
+
+  @Public()
+  @Get('kakao/login')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoAuth() {}
+
+  @Public()
+  @Get('oauth2/redirect/kakao')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoAuthRedirect(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = await this.authService.googleLogin(req, res);
+    res.redirect('/ticket');
+  }
 }
