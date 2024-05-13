@@ -16,6 +16,7 @@ import { DiscountRate } from './discountRate.entity';
 import { RefreshToken } from './refreshToken.entity';
 import { Ticket } from './ticket.entity';
 import { Transaction } from './transaction.entity';
+import { IsOptional } from 'class-validator';
 
 @Entity()
 export class User {
@@ -27,8 +28,12 @@ export class User {
   })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   password: string;
+
+  @Column({ default: 'none' })
+  provider: string;
 
   @Column({ type: 'enum', enum: Role })
   role: Role = Role.CONSUMER;

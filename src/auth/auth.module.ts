@@ -13,6 +13,7 @@ import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from 'src/user/entity/user.entity';
 import { KakaoStrategy } from './strategies/kakao.strategy';
+import { NaverStrategy } from './strategies/naver.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { KakaoStrategy } from './strategies/kakao.strategy';
   controllers: [AuthController],
   providers: [
     KakaoStrategy,
+    NaverStrategy,
     GoogleStrategy,
     AuthService,
     JwtStrategy,

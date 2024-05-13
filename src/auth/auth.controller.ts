@@ -103,4 +103,20 @@ export class AuthController {
     const userId = await this.authService.googleLogin(req, res);
     res.redirect('/ticket');
   }
+
+  @Public()
+  @Get('naver/login')
+  @UseGuards(AuthGuard('naver'))
+  async naverAuth() {}
+
+  @Public()
+  @Get('oauth2/redirect/naver')
+  @UseGuards(AuthGuard('naver'))
+  async naverAuthRedirect(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = await this.authService.googleLogin(req, res);
+    res.redirect('/ticket');
+  }
 }
