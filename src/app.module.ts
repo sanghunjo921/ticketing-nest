@@ -13,6 +13,7 @@ import { LoggerContextMiddleware } from './common/middleware/logger.middleware';
 import { RabbitMqModule } from './rabbit-mq/rabbit-mq.module';
 import awsConfig from './config/aws.config';
 import { AwsModule } from './aws/aws.module';
+import { CookieModule } from './cookie/cookie.module';
 import redisConfig from './config/redis.config';
 import rabbitmqConfig from './config/rabbitmq.config';
 
@@ -70,6 +71,7 @@ import rabbitmqConfig from './config/rabbitmq.config';
     DiscountRateModule,
     RabbitMqModule,
     AwsModule,
+    CookieModule,
   ],
   providers: [Logger],
 })

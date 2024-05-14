@@ -52,7 +52,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // app.use(cookieParser())
+  // app.use(cookieParser());
 
   console.log(join(__dirname, '..', 'images'));
   await app.listen(3000);

@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entity/refreshToken.entity';
 import { DataSource, Repository } from 'typeorm';
-import { TokenType } from './type/auth.type';
+import { ProviderType, TokenType } from './type/auth.type';
 import { User } from 'src/user/entity/user.entity';
 import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Request, Response } from 'express';
@@ -27,6 +27,7 @@ export class AuthService {
     email: string,
     password: string,
     res: Response,
+    req: Request,
   ): Promise<SignupResDto> {
     const queryRunner = this.dataSource.createQueryRunner(); // 얘를 통해 디비에 접근 및 종료
     await queryRunner.connect();
@@ -182,11 +183,15 @@ export class AuthService {
         },
       });
 
+      console.log({ newUser: 'create new user' });
+
       const newUser = this.userRepository.create({
         email,
         discountRate,
         provider,
       });
+
+      console.log({ newUser, provider });
 
       await this.userRepository.save(newUser);
 
@@ -196,8 +201,14 @@ export class AuthService {
     }
   }
 
-  async googleLogin(req, res: Response): Promise<SignupResDto> {
-    const { email, provider } = req.user;
+  async googleLogin(
+    req,
+    res: Response,
+    provider: string,
+  ): Promise<SignupResDto> {
+    const { email } = req.user;
+
+    console.log({ provider });
 
     const user: User = await this.findByEmailOrSave(email, provider);
     const accessToken = this.generateToken(user.id, TokenType.ACCESS);

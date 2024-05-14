@@ -18,6 +18,7 @@ import {
 import { Membership, Role } from '../type/user.enum';
 import { Transaction } from './transaction.entity';
 import { IsOptional } from 'class-validator';
+import { ProviderType } from 'src/auth/type/auth.type';
 
 @Entity()
 export class User {
