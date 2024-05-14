@@ -30,6 +30,7 @@ import { SigninReqDto, SignupReqDto } from './dto/req.dto';
 import { RefreshResDto, SigninResDto, SignupResDto } from './dto/res.dto';
 import { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { ProviderType } from './type/auth.type';
 
 @Controller()
 @ApiExtraModels(SignupResDto, SigninResDto, RefreshResDto)
@@ -43,11 +44,13 @@ export class AuthController {
   async signup(
     @Body() { email, password, passwordConfirm }: SignupReqDto,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ): Promise<SignupResDto> {
     if (password !== passwordConfirm) {
       throw new BadRequestException('Passwords do not match');
     }
-    return this.authService.signUp(email, password, res);
+
+    return this.authService.signUp(email, password, res, req);
   }
 
   @Public()
@@ -84,7 +87,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res);
+    const userId = await this.authService.googleLogin(req, res, 'google');
     res.redirect('/ticket');
   }
 
@@ -100,7 +103,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res);
+    const userId = await this.authService.googleLogin(req, res, 'kakao');
     res.redirect('/ticket');
   }
 
@@ -116,7 +119,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res);
+    const userId = await this.authService.googleLogin(req, res, 'naver');
     res.redirect('/ticket');
   }
 }
