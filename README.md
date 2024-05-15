@@ -10,7 +10,7 @@
 
 ## 개발 환경 구조
 <p align="center">
-  <img src="./structure.png" alt="프로젝트 구조">
+  <img src="./dev.png" alt="프로젝트 구조">
 </p>
 
 ## 주요 기능 및 구현 내용
