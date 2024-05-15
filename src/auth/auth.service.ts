@@ -52,7 +52,7 @@ export class AuthService {
       const accessToken = this.generateToken(newUser.id, TokenType.ACCESS);
       const refreshToken = this.generateToken(newUser.id, TokenType.REFRESH);
 
-      this.sendAuthCookies(res, accessToken, refreshToken);
+      this.sendAuthCookies(res, accessToken, refreshToken, newUser.id);
 
       const refreshEntity = queryRunner.manager.create(RefreshToken, {
         token: refreshToken,
@@ -96,7 +96,7 @@ export class AuthService {
 
     const accessToken = this.generateToken(user.id, TokenType.ACCESS);
 
-    this.sendAuthCookies(res, accessToken, refreshToken.token);
+    this.sendAuthCookies(res, accessToken, refreshToken.token, user.id);
 
     return {
       userId: user.id,
@@ -117,7 +117,7 @@ export class AuthService {
 
     const accessToken = this.generateToken(userId, TokenType.ACCESS);
 
-    this.sendAuthCookies(res, accessToken, refreshToken.token);
+    this.sendAuthCookies(res, accessToken, refreshToken.token, userId);
 
     return {
       userId,
@@ -158,6 +158,7 @@ export class AuthService {
     res: Response,
     accessToken: string,
     refreshToken: string,
+    userId: string,
   ): void {
     res.cookie('access_token', accessToken, {
       httpOnly: true,
@@ -166,6 +167,12 @@ export class AuthService {
     });
 
     res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
+
+    res.cookie('userId', userId, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
@@ -214,7 +221,7 @@ export class AuthService {
     const accessToken = this.generateToken(user.id, TokenType.ACCESS);
     const refreshToken = this.generateToken(user.id, TokenType.REFRESH);
 
-    this.sendAuthCookies(res, accessToken, refreshToken);
+    this.sendAuthCookies(res, accessToken, refreshToken, user.id);
 
     console.log({ accessToken: accessToken, refreshToken: refreshToken });
 
