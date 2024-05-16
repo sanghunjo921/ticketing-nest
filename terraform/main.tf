@@ -33,8 +33,8 @@ resource "aws_ecs_task_definition" "ticketing_task" {
   network_mode             = "awsvpc"
   cpu                      = "1024"
   memory                   = "4096"
-  execution_role_arn       = "arn:aws:iam::829235619109:role/ecsTaskExecutionRole"
-  task_role_arn            = "arn:aws:iam::829235619109:role/ecsTaskExecutionRole"
+  execution_role_arn       = var.execution_role_arn
+  task_role_arn            = var.task_role_arn
 
   volume {
     name = "web_vol"
@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "ticketing_task" {
 [
   {
     "name": "web",
-    "image": "829235619109.dkr.ecr.ap-northeast-2.amazonaws.com/ticketing:latest",
+    "image": var.image_uri,
     "cpu": 1024,
     "memory": 4096,
     "essential": true,
