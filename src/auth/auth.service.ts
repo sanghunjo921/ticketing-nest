@@ -162,19 +162,19 @@ export class AuthService {
   ): void {
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       sameSite: 'none',
     });
 
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       sameSite: 'none',
     });
 
     res.cookie('userId', userId, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       sameSite: 'none',
     });
   }

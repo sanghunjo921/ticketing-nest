@@ -55,3 +55,19 @@ variable "REDIS_HOST" {
   type = string
 }
 
+variable "execution_role_arn" {
+  description = "The ARN of the IAM role that grants the ECS agent permission to make AWS API calls on your behalf."
+  type        = string
+}
+
+variable "task_role_arn" {
+  description = "The ARN of the IAM role that the task can assume."
+  type        = string
+}
+
+variable "image_uri" {
+  description = "The URI of the Docker image to use for the container."
+  type        = string
+}
+
+
