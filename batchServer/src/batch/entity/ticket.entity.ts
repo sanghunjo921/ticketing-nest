@@ -32,6 +32,9 @@ export class Ticket {
   @Column()
   remaining_number: number;
 
+  @Column({ nullable: true })
+  imagePath: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

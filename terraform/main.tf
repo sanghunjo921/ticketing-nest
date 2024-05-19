@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-northeast-2"
+  region = var.region
 }
 
 resource "aws_ecs_cluster" "ticketing_cluster" {
@@ -49,14 +49,14 @@ resource "aws_ecs_task_definition" "ticketing_task" {
 [
   {
     "name": "web",
-    "image": var.image_uri,
+    "image": "${var.image_uri}",
     "cpu": 1024,
     "memory": 4096,
     "essential": true,
     "portMappings": [
       {
-        "containerPort": var.container_port,
-        "hostPort": var.host_port,
+        "containerPort": ${var.container_port},
+        "hostPort": ${var.host_port},
         "protocol": "tcp",
         "appProtocol": "http"
       }
@@ -64,35 +64,35 @@ resource "aws_ecs_task_definition" "ticketing_task" {
     "environment": [
       {
         "name": "REDIS_HOST",
-        "value": var.REDIS_HOST
+        "value": "${var.REDIS_HOST}"
       },
       {
         "name": "DB_DIALECT",
-        "value": var.DB_DIALECT
+        "value": "${var.DB_DIALECT}"
       },
       {
         "name": "REDIS_PORT",
-        "value": var.REDIS_PORT
+        "value": "${var.REDIS_PORT}"
       },
       {
         "name": "DB_PORT",
-        "value": var.DB_PORT
+        "value": "${var.DB_PORT}"
       },
       {
         "name": "DB_USER",
-        "value": var.DB_USER
+        "value": "${var.DB_USER}"
       },
       {
         "name": "DB_NAME",
-        "value": var.DB_NAME
+        "value": "${var.DB_NAME}"
       },
       {
         "name": "DB_HOST",
-        "value": var.DB_HOST
+        "value": "${var.DB_HOST}"
       },
       {
         "name": "DB_PASSWORD",
-        "value": var.DB_PASSWORD
+        "value": "${var.DB_PASSWORD}"
       }
     ],
     "mountPoints": [
@@ -108,7 +108,7 @@ resource "aws_ecs_task_definition" "ticketing_task" {
       "options": {
         "awslogs-group": "${aws_cloudwatch_log_group.ticketing_logs.name}",
         "awslogs-stream-prefix": "${aws_cloudwatch_log_stream.ticketing_log_stream.name}",
-        "awslogs-region": "ap-northeast-2"
+        "awslogs-region": "${var.region}"
       }
     }
   }
