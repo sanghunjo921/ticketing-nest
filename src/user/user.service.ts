@@ -318,7 +318,7 @@ export class UserService {
         console.log('success');
       }
 
-      this.rabbitMqService.sendToRabbitMQ(user.id, ticketId, 1, appliedPrice);
+      // this.rabbitMqService.sendToRabbitMQ(user.id, ticketId, 1, appliedPrice);
 
       return transactionData;
     } catch (error) {

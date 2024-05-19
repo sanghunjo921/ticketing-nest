@@ -12,6 +12,7 @@ import {
   ValidationPipe,
   UploadedFiles,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
@@ -42,6 +43,7 @@ import { TicketService } from './ticket.service';
 import { Express } from 'express';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from 'src/config/multerOptions';
+import cookieParser from 'cookie-parser';
 
 @Controller('ticket')
 @ApiTags('Ticket')
@@ -99,7 +101,8 @@ export class TicketController {
   @ApiGetPageResponse(FindTicketResDto, 'Find all ticket s')
   @Public()
   @Get()
-  findAll(@Query() { page, size }: PageReqDto) {
+  findAll(@Query() { page, size }: PageReqDto, @Req() req: Request) {
+    // console.log({ cookie: req.headers });
     return this.ticketSerivce.findAll(page, size);
   }
 

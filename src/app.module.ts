@@ -38,13 +38,13 @@ import rabbitmqConfig from './config/rabbitmq.config';
           password: configService.get('db.password'),
           autoLoadEntities: true,
         } as any;
-        if (configService.get('STAGE') === 'dev') {
-          console.log(typeOrmModuleOptions);
-          typeOrmModuleOptions = Object.assign(typeOrmModuleOptions, {
-            synchronize: true,
-            logging: true,
-          });
-        }
+        // if (configService.get('STAGE') === 'dev') {
+        //   console.log(typeOrmModuleOptions);
+        typeOrmModuleOptions = Object.assign(typeOrmModuleOptions, {
+          synchronize: true,
+          logging: true,
+        });
+        // }
         return typeOrmModuleOptions;
       },
     }),

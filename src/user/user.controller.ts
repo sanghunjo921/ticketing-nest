@@ -54,6 +54,7 @@ export class UserController {
   }
 
   @ApiGetResponse(UserResDto, 'User found successfully')
+  @Test()
   @Get(':id')
   findOne(@Param() { id }: FindUserReqDto): Promise<UserResDto> {
     const user = this.userService.findOne(id);
