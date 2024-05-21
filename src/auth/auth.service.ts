@@ -208,7 +208,7 @@ export class AuthService {
     }
   }
 
-  async googleLogin(
+  async socialLogin(
     req,
     res: Response,
     provider: string,

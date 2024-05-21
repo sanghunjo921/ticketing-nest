@@ -87,7 +87,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res, 'google');
+    const userId = await this.authService.socialLogin(req, res, 'google');
     res.redirect('/ticket');
   }
 
@@ -103,7 +103,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res, 'kakao');
+    const userId = await this.authService.socialLogin(req, res, 'kakao');
     res.redirect('/ticket');
   }
 
@@ -119,7 +119,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.googleLogin(req, res, 'naver');
+    const userId = await this.authService.socialLogin(req, res, 'naver');
     res.redirect('/ticket');
   }
 }
