@@ -16,6 +16,9 @@ import { AwsModule } from './aws/aws.module';
 import { CookieModule } from './cookie/cookie.module';
 import redisConfig from './config/redis.config';
 import rabbitmqConfig from './config/rabbitmq.config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphqlTestModule } from './graphql-test/graphql-test.module';
 
 @Module({
   imports: [
@@ -25,6 +28,7 @@ import rabbitmqConfig from './config/rabbitmq.config';
       cache: true,
       load: [dbConfig, jwtConfig, awsConfig, redisConfig, rabbitmqConfig],
     }),
+    // GraphQLModule.forRoot<ApolloDriverConfig>({ driver: ApolloDriver }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -72,6 +76,7 @@ import rabbitmqConfig from './config/rabbitmq.config';
     RabbitMqModule,
     AwsModule,
     CookieModule,
+    GraphqlTestModule,
   ],
   providers: [Logger],
 })
