@@ -16,19 +16,25 @@ import { AwsModule } from './aws/aws.module';
 import { CookieModule } from './cookie/cookie.module';
 import redisConfig from './config/redis.config';
 import rabbitmqConfig from './config/rabbitmq.config';
+import { GraphqlTestModule } from './graphql-test/graphql-test.module';
+import { PopularTicketModule } from './popular-ticket/popular-ticket.module';
+import { PopularTicketResolver } from './popular-ticket/popular-ticket.resolver';
+import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { GraphqlTestModule } from './graphql-test/graphql-test.module';
 
 @Module({
   imports: [
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+    }),
     ConfigModule.forRoot({
       envFilePath: ['.env'],
       isGlobal: true,
       cache: true,
       load: [dbConfig, jwtConfig, awsConfig, redisConfig, rabbitmqConfig],
     }),
-    // GraphQLModule.forRoot<ApolloDriverConfig>({ driver: ApolloDriver }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -77,8 +83,9 @@ import { GraphqlTestModule } from './graphql-test/graphql-test.module';
     AwsModule,
     CookieModule,
     GraphqlTestModule,
+    PopularTicketModule,
   ],
-  providers: [Logger],
+  providers: [Logger, PopularTicketResolver],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
