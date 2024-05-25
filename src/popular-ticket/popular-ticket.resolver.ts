@@ -1,55 +1,50 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { Test } from 'src/common/decorator/public.decorator';
+import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { TicketService } from 'src/ticket/ticket.service';
-import { CreatePopularTicketDto } from './dto/create-popular-ticket.dto';
+import { Category } from 'src/ticket/type/ticket.enum';
+import {
+  CreatePopularTicketInput,
+  CreatePopularTicketOutput,
+} from './dto/create-popular-ticket.dto';
 import { UpdatePopularTicketDto } from './dto/update-popular-ticket.dto';
-import { PopularTicket } from './models/PopularTicket';
+import { PopularTicketService } from './popular-ticket.service';
 
 @Resolver()
 export class PopularTicketResolver {
-  constructor(private readonly ticketService: TicketService) {}
+  constructor(
+    private readonly popularTicketService: PopularTicketService,
+    private readonly ticketService: TicketService,
+  ) {}
 
   @Test()
-  @Query(() => [PopularTicket])
-  getPopularTickets(): PopularTicket[] {
-    return [];
+  @Query(() => [Ticket])
+  getPopularTickets(): Promise<Ticket[]> {
+    return this.popularTicketService.getPopularTickets();
   }
 
   @Test()
-  @Query(() => [PopularTicket])
+  @Query(() => [Ticket])
   async getPopularTicketsByCategory(
-    @Args('category') category: string,
-  ): Promise<PopularTicket[]> {
-    const tickets = await this.ticketService.findAll(1, 10);
-    return tickets;
+    @Args('input') category: Category,
+  ): Promise<Ticket[]> {
+    return this.popularTicketService.getPopularTicketsByCategory(category);
     // return TicketService.filter((ticket) => ticket.category.toLowerCase().includes(category.toLowerCase()))
     // return [];
   }
 
   @Test()
-  @Mutation(() => Boolean)
+  @Mutation(() => CreatePopularTicketOutput)
   createPopularTicket(
-    @Args('createPopularTicketInput') input: CreatePopularTicketDto,
-  ): Boolean {
-    const {
-      id,
-      title,
-      description,
-      status,
-      price,
-      remaining_number,
-      imagePath,
-      createdAt,
-      updatedAt,
-    } = input;
-
-    return true;
+    @Args('input') input: CreatePopularTicketInput,
+  ): Promise<CreatePopularTicketOutput> {
+    return this.popularTicketService.createTicket(input);
   }
 
   @Test()
   @Mutation(() => Boolean)
   async updatePopularTicket(
-    @Args('updatePopularTicketInput') input: UpdatePopularTicketDto,
+    @Args('input') input: UpdatePopularTicketDto,
     @Args('id') ticketId: number,
   ): Promise<Boolean> {
     await this.ticketService.update(ticketId, input);

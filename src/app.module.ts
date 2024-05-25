@@ -85,7 +85,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     GraphqlTestModule,
     PopularTicketModule,
   ],
-  providers: [Logger, PopularTicketResolver],
+  providers: [Logger],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

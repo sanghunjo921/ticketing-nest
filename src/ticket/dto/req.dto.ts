@@ -8,7 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Status } from '../type/ticket.enum';
+import { Category, Status } from '../type/ticket.enum';
 
 export class FindTicketReqDto {
   @ApiProperty({
@@ -55,6 +55,10 @@ export class CreateTicketReqDto {
   @ApiPropertyOptional()
   @IsOptional()
   imagePath?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  category?: Category;
 }
 
 export class UpdateTicketReqDto {

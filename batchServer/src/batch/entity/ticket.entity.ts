@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Status } from '../type/ticket.enum';
+import { Category, Status } from '../type/ticket.enum';
 import { User } from './user.entity';
 
 @Entity()
@@ -34,6 +34,9 @@ export class Ticket {
 
   @Column({ nullable: true })
   imagePath: string;
+
+  @Column({ type: 'enum', enum: Category, nullable: true })
+  category?: Category;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

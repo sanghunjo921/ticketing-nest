@@ -10,7 +10,7 @@ import { Like, Repository } from 'typeorm';
 import { FilteredTicketReqDto, UpdateTicketReqDto } from './dto/req.dto';
 import { FindTicketResDto, GetImageResDto } from './dto/res.dto';
 import { Ticket } from './entity/ticket.entity';
-import { Status } from './type/ticket.enum';
+import { Category, Status } from './type/ticket.enum';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import path from 'path';
@@ -59,6 +59,23 @@ export class TicketService {
     const ticket = await this.ticketRepository.findOneBy({ id });
 
     return ticket;
+  }
+
+  async findOneByTitle(title: string): Promise<Ticket> {
+    return this.ticketRepository.findOne({
+      where: {
+        title,
+      },
+    });
+  }
+
+  async findByCategory(category: Category): Promise<Ticket[]> {
+    const tickets = this.ticketRepository.find({
+      where: {
+        category,
+      },
+    });
+    return tickets;
   }
 
   async getFilteredTickets(page: number, size: number, searchTerm: string) {
@@ -134,6 +151,7 @@ export class TicketService {
     remaining_number: number,
     description?: string,
     status?: Status,
+    category?: Category,
   ) {
     const ticket = this.ticketRepository.create({
       title,
@@ -141,7 +159,10 @@ export class TicketService {
       remaining_number,
       description,
       status,
+      category,
     });
+
+    console.log({ ticket });
 
     return this.ticketRepository.save(ticket);
   }
