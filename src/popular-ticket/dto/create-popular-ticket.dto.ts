@@ -1,33 +1,23 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
+import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { Status } from 'src/ticket/type/ticket.enum';
 
-//ArgType()
+//ArgsType()
 @InputType()
-export class CreatePopularTicketDto {
-  @Field(() => Number)
-  id: number;
+export class CreatePopularTicketInput extends PickType(Ticket, [
+  'title',
+  'price',
+  'remaining_number',
+  'description',
+  'status',
+  'category',
+]) {}
 
-  @Field(() => String)
-  title: string;
+@ObjectType()
+export class CreatePopularTicketOutput {
+  @Field(() => String, { nullable: true })
+  error?: string;
 
-  @Field(() => String, { defaultValue: 'no desc yet' })
-  description: string;
-
-  @Field(() => String, { defaultValue: Status.AVAILABLE })
-  status: Status;
-
-  @Field(() => Number)
-  price: number;
-
-  @Field(() => Number)
-  remaining_number: number;
-
-  @Field(() => String)
-  imagePath?: string;
-
-  @Field(() => Date, { defaultValue: new Date() })
-  createdAt: Date;
-
-  @Field(() => Date, { defaultValue: new Date() })
-  updatedAt: Date;
+  @Field(() => Boolean)
+  ok: boolean;
 }

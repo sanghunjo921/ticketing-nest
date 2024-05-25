@@ -51,12 +51,20 @@ import cookieParser from 'cookie-parser';
 export class TicketController {
   constructor(private readonly ticketSerivce: TicketService) {}
 
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
+  @Test()
   @ApiPostResponse(CreateTicketResDto, 'Ticket is created successfully')
   @Post()
   create(
     @Body()
-    { title, desc, price, remaining_number, status }: CreateTicketReqDto,
+    {
+      title,
+      desc,
+      price,
+      remaining_number,
+      status,
+      category,
+    }: CreateTicketReqDto,
   ): CreateTicketResDto | string {
     return this.ticketSerivce.create(
       title,
@@ -64,6 +72,7 @@ export class TicketController {
       remaining_number,
       desc,
       status,
+      category,
     );
   }
 
