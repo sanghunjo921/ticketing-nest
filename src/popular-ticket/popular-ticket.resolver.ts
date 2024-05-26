@@ -29,8 +29,14 @@ export class PopularTicketResolver {
     @Args('input') category: Category,
   ): Promise<Ticket[]> {
     return this.popularTicketService.getPopularTicketsByCategory(category);
-    // return TicketService.filter((ticket) => ticket.category.toLowerCase().includes(category.toLowerCase()))
-    // return [];
+  }
+
+  @Test()
+  @Query(() => [Ticket])
+  async getFilteredTickets(
+    @Args('input') searchTerm: string,
+  ): Promise<Ticket[]> {
+    return this.ticketService.getFilteredTickets(1, 10, searchTerm);
   }
 
   @Test()
@@ -48,6 +54,14 @@ export class PopularTicketResolver {
     @Args('id') ticketId: number,
   ): Promise<Boolean> {
     await this.ticketService.update(ticketId, input);
+
+    return true;
+  }
+
+  @Test()
+  @Mutation(() => Boolean)
+  async deletePopularTicket(@Args('id') ticketId: number): Promise<Boolean> {
+    await this.ticketService.delete(ticketId);
 
     return true;
   }
