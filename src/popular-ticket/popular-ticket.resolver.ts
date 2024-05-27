@@ -6,6 +6,8 @@ import { Category } from 'src/ticket/type/ticket.enum';
 import {
   CreatePopularTicketInput,
   CreatePopularTicketOutput,
+  GetPopularTicketInput,
+  GetPopularTicketOutput,
 } from './dto/create-popular-ticket.dto';
 import { UpdatePopularTicketDto } from './dto/update-popular-ticket.dto';
 import { PopularTicketService } from './popular-ticket.service';
@@ -26,9 +28,17 @@ export class PopularTicketResolver {
   @Test()
   @Query(() => [Ticket])
   async getPopularTicketsByCategory(
-    @Args('input') category: Category,
+    @Args('input') { category }: GetPopularTicketInput,
   ): Promise<Ticket[]> {
     return this.popularTicketService.getPopularTicketsByCategory(category);
+  }
+
+  @Test()
+  @Query(() => GetPopularTicketOutput)
+  async getPopularTicketsByCategories(
+    @Args('input') { categories }: GetPopularTicketInput,
+  ): Promise<GetPopularTicketOutput> {
+    return this.popularTicketService.getPopularTicketsByCategories(categories);
   }
 
   @Test()

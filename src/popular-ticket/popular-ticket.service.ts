@@ -5,6 +5,7 @@ import { Category } from 'src/ticket/type/ticket.enum';
 import {
   CreatePopularTicketInput,
   CreatePopularTicketOutput,
+  GetPopularTicketOutput,
 } from './dto/create-popular-ticket.dto';
 
 @Injectable()
@@ -17,6 +18,33 @@ export class PopularTicketService {
 
   async getPopularTicketsByCategory(category: Category): Promise<Ticket[]> {
     return this.ticketService.findByCategory(category);
+  }
+
+  async getPopularTicketsByCategories(
+    categories: Category[],
+  ): Promise<GetPopularTicketOutput> {
+    const ticket = [];
+
+    categories.forEach((category) => {
+      ticket.push(
+        new Promise(async (resolve) => {
+          resolve(await this.getPopularTicketsByCategory(category));
+        }),
+      );
+    });
+
+    const result = await Promise.all(ticket);
+
+    const r = {};
+
+    categories.forEach((category, i) => (r[category] = result[i]));
+
+    return {
+      ok: true,
+      moviesTicket: r[Category.MOVIES],
+      concertsTicket: r[Category.CONCERTS],
+      sportsTicket: r[Category.SPORTS],
+    };
   }
 
   async createTicket(
