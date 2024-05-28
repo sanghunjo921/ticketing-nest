@@ -1,3 +1,4 @@
+import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
@@ -9,6 +10,8 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { BaseOutput } from 'src/common/entities/base.dto';
+import { User } from '../entity/user.entity';
 import { Membership, Role } from '../type/user.enum';
 
 export class FindUserReqDto {
@@ -90,4 +93,26 @@ export class IssueCouponReqDto {
   })
   @IsNumber()
   couponId: number;
+}
+
+@InputType()
+export class CreateAccountInput extends PickType(User, [
+  'email',
+  'password',
+  'role',
+]) {
+  @Field(() => String)
+  confirmPassword: string;
+}
+
+@ObjectType()
+export class CreateAccountOutput extends BaseOutput {}
+
+@InputType()
+export class SigninInput extends PickType(User, ['email', 'password']) {}
+
+@ObjectType()
+export class SigninOutput extends BaseOutput {
+  @Field(() => String, { nullable: true })
+  token?: string;
 }

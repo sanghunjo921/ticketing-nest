@@ -1,4 +1,10 @@
-import { Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  Logger,
+  RequestMethod,
+} from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TicketModule } from './ticket/ticket.module';
@@ -22,6 +28,8 @@ import { PopularTicketResolver } from './popular-ticket/popular-ticket.resolver'
 import { join } from 'path';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { JwtModule } from './jwt/jwt.module';
+import { JwtMiddleWare } from './jwt/jwt.middleware';
 
 @Module({
   imports: [
@@ -84,11 +92,17 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     CookieModule,
     GraphqlTestModule,
     PopularTicketModule,
+    JwtModule.forRoot({
+      privateKey: process.env.JWT_PRIVATE_KEY,
+    }),
   ],
   providers: [Logger],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleWare)
+      .forRoutes({ path: '/graphql', method: RequestMethod.ALL });
     // consumer.apply(LoggerContextMiddleware).forRoutes('*');
   }
 }

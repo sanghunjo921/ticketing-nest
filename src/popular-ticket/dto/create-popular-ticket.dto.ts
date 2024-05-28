@@ -5,6 +5,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
+import { BaseOutput } from 'src/common/entities/base.dto';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { Category, Status } from 'src/ticket/type/ticket.enum';
 
@@ -20,12 +21,7 @@ export class CreatePopularTicketInput extends PickType(Ticket, [
 ]) {}
 
 @ObjectType()
-export class CreatePopularTicketOutput {
-  @Field(() => String, { nullable: true })
-  error?: string;
-  @Field(() => Boolean)
-  ok: boolean;
-}
+export class CreatePopularTicketOutput extends BaseOutput {}
 
 @InputType()
 export class GetPopularTicketInput extends PartialType(

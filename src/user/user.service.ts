@@ -7,7 +7,14 @@ import {
   Inject,
   LoggerService,
 } from '@nestjs/common';
-import { ReserveTicketReqDto, UpdateUserReqDto } from './dto/req.dto';
+import {
+  CreateAccountInput,
+  CreateAccountOutput,
+  ReserveTicketReqDto,
+  SigninInput,
+  SigninOutput,
+  UpdateUserReqDto,
+} from './dto/req.dto';
 import { UserResDto, UsersResDto } from './dto/res.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
@@ -20,6 +27,7 @@ import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
 import { RabbitMqService } from 'src/rabbit-mq/rabbit-mq.service';
+import { JwtService } from 'src/jwt/jwt.service';
 
 @Injectable()
 export class UserService {
@@ -39,6 +47,7 @@ export class UserService {
     private readonly couponRepository: Repository<Coupon>,
     private readonly rabbitMqService: RabbitMqService,
     @Inject(Logger) private readonly logger: LoggerService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async findAll(page: number, size: number) {
@@ -67,6 +76,79 @@ export class UserService {
 
     await this.userRepository.save(user);
     return user;
+  }
+
+  async createAccount({
+    email,
+    password,
+    role,
+    confirmPassword,
+  }: CreateAccountInput): Promise<CreateAccountOutput> {
+    try {
+      const isExist = await this.userRepository.findOne({ where: { email } });
+
+      if (isExist) {
+        throw new Error('User already exist');
+      }
+
+      if (password !== confirmPassword) {
+        throw new Error('Password does not match');
+      }
+
+      const newUser = this.userRepository.create({ email, password, role });
+
+      const discountRate = await this.discountRepository.findOne({
+        where: {
+          membershipLevel: 'bronze',
+        },
+      });
+
+      newUser.discountRate = discountRate;
+
+      await this.userRepository.save(newUser);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async signin({ email, password }: SigninInput): Promise<SigninOutput> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const isMatched = user.password === password;
+      // const isMatched = await user.isMatchedPassword(password);
+
+      if (!isMatched) {
+        throw new Error('Wrong password!');
+      }
+
+      const token = this.jwtService.signin(user.id);
+
+      return {
+        ok: true,
+        token,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
   }
 
   async update(id: string, updateData: UpdateUserReqDto) {
