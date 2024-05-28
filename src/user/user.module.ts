@@ -9,14 +9,15 @@ import { DiscountRate } from 'src/discount-rate/entity/discountRate.entity';
 import { Transaction } from './entity/transaction.entity';
 import { Coupon } from 'src/coupon/entity/coupon.entity';
 import { RabbitMqModule } from 'src/rabbit-mq/rabbit-mq.module';
+import { UserResolver } from './user.resolver';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Ticket, DiscountRate, Transaction, Coupon]),
-    RedisModule,
+    TypeOrmModule.forFeature([User, Ticket, DiscountRate, Transaction, Coupon]), //forFeature: dynamic module: uses register to create a function like forRoot
+    RedisModule, //static module
     RabbitMqModule,
   ],
-  providers: [UserService, Logger],
+  providers: [UserService, Logger, UserResolver],
   controllers: [UserController],
   exports: [UserService],
 })
