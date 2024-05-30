@@ -116,3 +116,6 @@ export class SigninOutput extends BaseOutput {
   @Field(() => String, { nullable: true })
   token?: string;
 }
+
+@ObjectType()
+export class SignoutOutput extends BaseOutput {}
