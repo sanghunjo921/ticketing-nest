@@ -5,6 +5,7 @@ import {
   CreateAccountOutput,
   SigninInput,
   SigninOutput,
+  SignoutOutput,
 } from './dto/req.dto';
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
@@ -25,6 +26,13 @@ export class UserResolver {
       ok,
       error,
     };
+  }
+
+  @Test()
+  @Mutation(() => Boolean)
+  async signout(@Args('id') userId: string): Promise<Boolean> {
+    await this.userSerive.delete(userId);
+    return true;
   }
 
   @Test()
