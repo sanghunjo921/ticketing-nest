@@ -228,6 +228,8 @@ export class UserService {
 
         ticketRemainingData -= quantity;
 
+        console.log({ ticketRemainingData });
+
         this.logger.log('Accessing to Redis to change data');
         multi.mset({
           [ticketKey]: JSON.stringify(ticketData),
@@ -262,7 +264,14 @@ export class UserService {
         console.log('success');
       }
 
-      return ticketData;
+      return {
+        id: ticketId,
+        title: ticketData.title,
+        desc: ticketData.description,
+        price: ticketData.price,
+        remainingData: ticketRemainingData,
+        category: ticketData.category,
+      };
     } catch (error) {
       this.logger.error('An error occurred while reserving ticket:', error);
       throw error;
