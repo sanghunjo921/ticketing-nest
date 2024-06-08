@@ -271,6 +271,7 @@ export class UserService {
         price: ticketData.price,
         remainingData: ticketRemainingData,
         category: ticketData.category,
+        quantity,
       };
     } catch (error) {
       this.logger.error('An error occurred while reserving ticket:', error);
