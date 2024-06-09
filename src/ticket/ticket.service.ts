@@ -7,13 +7,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { FilteredTicketReqDto, UpdateTicketReqDto } from './dto/req.dto';
+import { UpdateTicketReqDto } from './dto/req.dto';
 import { FindTicketResDto, GetImageResDto } from './dto/res.dto';
 import { Ticket } from './entity/ticket.entity';
 import { Category, Status } from './type/ticket.enum';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
-import path from 'path';
 import fs from 'fs';
 import { AwsService } from 'src/aws/aws.service';
 
@@ -101,7 +100,6 @@ export class TicketService {
   async getImage(id: number): Promise<GetImageResDto> {
     const ticket = await this.ticketRepository.findOneBy({ id });
 
-    console.log(ticket.imagePath);
     const image = await this.getImageBase64(ticket.imagePath);
 
     return { image };
@@ -119,16 +117,6 @@ export class TicketService {
 
   async uploadFile(image: Express.Multer.File, id: number) {
     const ticket = await this.ticketRepository.findOneBy({ id });
-
-    // const result = [];
-
-    // images.forEach((image) => {
-    //   const res = {
-    //     originalname: image.originalname,
-    //     filename: image.filename,
-    //   };
-    //   result.push(res);
-    // });
 
     const ext = image.originalname.split('.').pop();
 
@@ -196,10 +184,39 @@ export class TicketService {
   }
 
   async delete(id: number) {
-    const { affected } = await this.ticketRepository.delete(id);
-    if (affected === 0) {
-      throw new HttpException('Ticket not found', HttpStatus.BAD_REQUEST);
+    try {
+      const { affected } = await this.ticketRepository.delete(id);
+      if (affected === 0) {
+        throw new HttpException('Ticket not found', HttpStatus.BAD_REQUEST);
+      }
+
+      this.logger.log('Invalidating cache for all ticket pages');
+
+      const deletedTicketIndex = await this.findIndexById(id);
+
+      const deletedTicketPage = Math.ceil((deletedTicketIndex + 1) / 10);
+      const totalTickets = await this.ticketRepository.count();
+      const totalPages = Math.ceil(totalTickets / 10);
+
+      for (let page = deletedTicketPage; page <= totalPages; page++) {
+        const ticketKey = `tickets_page_${page}`;
+        await this.redisService.del(ticketKey);
+        this.logger.log(`Cache invalidated for key: ${ticketKey}`);
+      }
+      return 'deleted';
+    } catch (error) {
+      this.logger.error('An error occured while deleting the ticket', error);
+      throw error;
     }
-    return 'deleted';
+  }
+
+  async findIndexById(id: number): Promise<number> {
+    const tickets = await this.ticketRepository.find({
+      select: ['id'],
+    });
+
+    const index = tickets.findIndex((ticket) => ticket.id === id);
+
+    return index;
   }
 }
