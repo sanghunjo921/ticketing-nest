@@ -30,6 +30,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleWare } from './jwt/jwt.middleware';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { JwtMiddleWare } from './jwt/jwt.middleware';
     JwtModule.forRoot({
       privateKey: process.env.JWT_PRIVATE_KEY,
     }),
+    CommentModule,
   ],
   providers: [Logger],
 })
