@@ -26,6 +26,7 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { InternalServerErrorException } from '@nestjs/common';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 registerEnumType(Role, { name: 'Role' });
 
@@ -111,4 +112,7 @@ export class User {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshToken: RefreshToken;
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 }

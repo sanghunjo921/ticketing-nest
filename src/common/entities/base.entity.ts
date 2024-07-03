@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 @ObjectType()
+@Entity()
 export class BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => Number)

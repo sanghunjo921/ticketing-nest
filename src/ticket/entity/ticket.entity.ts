@@ -12,11 +12,13 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Category, Status } from '../type/ticket.enum';
 import { IsString, IsNumber, IsEnum } from 'class-validator';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 registerEnumType(Status, { name: 'Status' });
 registerEnumType(Category, { name: 'Category' });
@@ -66,4 +68,7 @@ export class Ticket extends BaseEntity {
   @ManyToMany(() => User, (user) => user.tickets)
   @JoinTable()
   users: User[];
+
+  @OneToMany(() => Comment, (comment) => comment.ticket)
+  comments: Comment[];
 }
