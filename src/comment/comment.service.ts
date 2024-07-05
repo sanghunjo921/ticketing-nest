@@ -45,42 +45,42 @@ export class CommentService {
     return newComment;
   }
 
-  //   async getAllCommentsByPost(ticketId: number): Promise<Comment[]> {
-  //     const targetTicket = await this.ticketService.findOne(ticketId);
+  async getAllCommentsByTicket(ticketId: number): Promise<Comment[]> {
+    const targetTicket = await this.ticketService.findOne(ticketId);
 
-  //     const comments = targetTicket.comments
+    const comments = targetTicket.comments;
 
-  //     comments.sort((commentA, commentB) => {
-  //       return (
-  //         commentA.parent - commentB.parent ||
-  //         commentA.createdAt.getTime() - commentB.createdAt.getTime()
-  //       );
-  //     });
+    comments.sort((commentA, commentB) => {
+      return (
+        commentA.parent - commentB.parent ||
+        commentA.createdAt.getTime() - commentB.createdAt.getTime()
+      );
+    });
 
-  //     return comments;
-  //   }
+    return comments;
+  }
 
-  //   async getCommentByPost(id: number, ticketId: number): Promise<Comment> {
-  //     try {
-  //       const targetPost = await this.ticketService.findOne(ticketId);
+  async getCommentByTicket(id: number, ticketId: number): Promise<Comment> {
+    try {
+      const targetPost = await this.ticketService.findOne(ticketId);
 
-  //       if (!targetPost) {
-  //         throw new Error('Post not found or already deleted');
-  //       }
+      if (!targetPost) {
+        throw new Error('Post not found or already deleted');
+      }
 
-  //       const targetComment = targetPost.comments.find(
-  //         (comment) => comment.id === id && comment.isDeleted === 'N',
-  //       );
+      const targetComment = targetPost.comments.find(
+        (comment) => comment.id === id && comment.isDeleted === 'N',
+      );
 
-  //       if (!targetComment) {
-  //         throw new Error('Comment not found or already deleted');
-  //       }
+      if (!targetComment) {
+        throw new Error('Comment not found or already deleted');
+      }
 
-  //       return targetComment;
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   }
+      return targetComment;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async updateComment(
     id: number,
@@ -103,24 +103,24 @@ export class CommentService {
     }
   }
 
-  //   async deleteCommentsByPostId(postid: number): Promise<any> {
-  //     try {
-  //       const targetPost = await this.ticketService.findPostById(postid);
+  async deleteCommentsByTicketId(ticketId: number): Promise<any> {
+    try {
+      const targetTicket = await this.ticketService.findOne(ticketId);
 
-  //       console.log({ targetPost });
+      console.log({ targetTicket });
 
-  //       return this.commentRepository.update(
-  //         {
-  //           post: targetPost,
-  //         },
-  //         {
-  //           isDeleted: 'Y',
-  //         },
-  //       );
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   }
+      return this.commentRepository.update(
+        {
+          ticket: targetTicket,
+        },
+        {
+          isDeleted: 'Y',
+        },
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async deleteComment(id: number): Promise<Comment> {
     try {

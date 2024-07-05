@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 export class FindTicketResDto {
   @ApiProperty({
@@ -15,6 +16,8 @@ export class FindTicketResDto {
   desc?: string;
 
   imagePath?: string;
+
+  comments: Comment[];
 }
 
 export class CreateTicketResDto {}
