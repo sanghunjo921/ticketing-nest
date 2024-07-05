@@ -69,6 +69,6 @@ export class Ticket extends BaseEntity {
   @JoinTable()
   users: User[];
 
-  @OneToMany(() => Comment, (comment) => comment.ticket)
+  @OneToMany(() => Comment, (comment) => comment.ticket, { eager: true })
   comments: Comment[];
 }

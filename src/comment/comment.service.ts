@@ -32,7 +32,7 @@ export class CommentService {
     ticketId,
   }: CreateCommentReqDto): Promise<CreateCommentResDto> {
     const user = await this.userService.findOne(userId);
-    const post = await this.ticketService.findOne(ticketId);
+    const ticket = await this.ticketService.findOne(ticketId);
 
     const newComment = this.commentRepository.create({
       content,
