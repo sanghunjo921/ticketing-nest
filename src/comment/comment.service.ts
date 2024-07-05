@@ -6,6 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { TicketService } from 'src/ticket/ticket.service';
 
 import { UserService } from 'src/user/user.service';
@@ -19,6 +20,8 @@ export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepository: Repository<Ticket>,
     private readonly userService: UserService,
     @Inject(forwardRef(() => TicketService))
     private readonly ticketService: TicketService,
@@ -40,6 +43,32 @@ export class CommentService {
       parent,
     });
 
+    const groupedComments = ticket.comments.reduce((acc, comment) => {
+      if (!acc[comment.parent]) {
+        acc[comment.parent] = [];
+      }
+      acc[comment.parent].push(comment);
+      return acc;
+    }, {});
+
+    // Sorting comments within each parent group by createdAt
+    Object.keys(groupedComments).forEach((parentId) => {
+      groupedComments[parentId].sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+    });
+
+    // Push the new comment to the appropriate parent group
+    if (!groupedComments[newComment.parent]) {
+      groupedComments[newComment.parent] = [];
+    }
+    groupedComments[newComment.parent].push(newComment);
+
+    // Flatten the grouped comments back into a single array
+    ticket.comments = Object.values(groupedComments).flat();
+
+    await this.ticketRepository.save(ticket);
     await this.commentRepository.save(newComment);
 
     return newComment;
