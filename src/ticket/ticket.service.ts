@@ -56,6 +56,26 @@ export class TicketService {
     }
   }
 
+  async findPopularTicketsByYear() {
+    const tickets = await this.ticketRepository.find();
+
+    const caching = [];
+
+    tickets.forEach(async (ticket) => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const yrKey = `ticket:${ticket.id}:yr:${year}`;
+
+      const yrCounts = JSON.parse(await this.redisService.get(yrKey));
+
+      caching[ticket.id] = yrCounts;
+    });
+
+    const sortedTickets = Object.entries(caching).sort((a, b) => a[1] - b[1]);
+
+    const sortedTicket = [];
+  }
+
   async findOne(id: number): Promise<FindTicketResDto> {
     await this.ticketRepository.increment({ id }, 'clickCount', 1);
 
@@ -72,7 +92,7 @@ export class TicketService {
     const monthKey = `ticket:${id}:month:${month}`;
     const weekKey = `ticket:${id}:week:${week}`;
 
-    let [yrCounts, monthCounts, weekCounts] = await (
+    let [yrCounts, monthCounts, weekCounts] = (
       await this.redisService.mget(yrKey, monthKey, weekKey)
     ).map((item) => +item);
 

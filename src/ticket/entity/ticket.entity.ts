@@ -60,7 +60,7 @@ export class Ticket extends BaseEntity {
   @IsString()
   imagePath?: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   @Field(() => Number)
   @IsNumber()
   clickCount: number;
