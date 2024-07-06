@@ -43,30 +43,7 @@ export class CommentService {
       parent,
     });
 
-    const groupedComments = ticket.comments.reduce((acc, comment) => {
-      if (!acc[comment.parent]) {
-        acc[comment.parent] = [];
-      }
-      acc[comment.parent].push(comment);
-      return acc;
-    }, {});
-
-    // Sorting comments within each parent group by createdAt
-    Object.keys(groupedComments).forEach((parentId) => {
-      groupedComments[parentId].sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-    });
-
-    // Push the new comment to the appropriate parent group
-    if (!groupedComments[newComment.parent]) {
-      groupedComments[newComment.parent] = [];
-    }
-    groupedComments[newComment.parent].push(newComment);
-
-    // Flatten the grouped comments back into a single array
-    ticket.comments = Object.values(groupedComments).flat();
+    ticket.comments.push(newComment);
 
     await this.ticketRepository.save(ticket);
     await this.commentRepository.save(newComment);
@@ -74,19 +51,36 @@ export class CommentService {
     return newComment;
   }
 
-  async getAllCommentsByTicket(ticketId: number): Promise<Comment[]> {
-    const targetTicket = await this.ticketService.findOne(ticketId);
+  async getAllCommentsByTicket(
+    ticketId: number,
+    page: number,
+    size: number,
+  ): Promise<Comment[]> {
+    const skip = (page - 1) * size;
 
-    const comments = targetTicket.comments;
-
-    comments.sort((commentA, commentB) => {
-      return (
-        commentA.parent - commentB.parent ||
-        commentA.createdAt.getTime() - commentB.createdAt.getTime()
-      );
+    const targetComments = await this.commentRepository.find({
+      where: { ticket: { id: ticketId }, parent: null },
+      skip,
+      take: size,
     });
 
-    return comments;
+    return targetComments;
+  }
+
+  async getChildrenComments(
+    commentId: number,
+    page: number,
+    size: number,
+  ): Promise<Comment[]> {
+    const skip = (page - 1) * size;
+
+    const targetComments = await this.commentRepository.find({
+      where: { parent: commentId },
+      skip,
+      take: size,
+    });
+
+    return targetComments;
   }
 
   async getCommentByTicket(id: number, ticketId: number): Promise<Comment> {
