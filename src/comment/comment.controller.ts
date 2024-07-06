@@ -40,8 +40,19 @@ export class CommentController {
   @Get()
   getAllCommentsByTicket(
     @Param('ticketId', ParseIntPipe) ticketId: number,
+    page: number,
+    size: number,
   ): Promise<Comment[]> {
-    return this.commentService.getAllCommentsByTicket(ticketId);
+    return this.commentService.getAllCommentsByTicket(ticketId, page, size);
+  }
+
+  @Get()
+  getChildrenComments(
+    @Param('commentId', ParseIntPipe) commentId: number,
+    page: number,
+    size: number,
+  ): Promise<Comment[]> {
+    return this.commentService.getChildrenComments(commentId, page, size);
   }
 
   @Get(':id')

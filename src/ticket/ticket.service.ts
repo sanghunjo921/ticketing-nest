@@ -15,6 +15,8 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import fs from 'fs';
 import { AwsService } from 'src/aws/aws.service';
+import { Http2ServerRequest } from 'http2';
+import { caculateTimeDifference } from 'src/utils/calculateDiffTime';
 
 @Injectable()
 export class TicketService {
@@ -55,7 +57,37 @@ export class TicketService {
   }
 
   async findOne(id: number): Promise<FindTicketResDto> {
+    await this.ticketRepository.increment({ id }, 'clickCount', 1);
+
     const ticket = await this.ticketRepository.findOneBy({ id });
+
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    // monday 기준
+    const week = caculateTimeDifference();
+
+    const yrKey = `ticket:${id}:yr:${year}`;
+    const monthKey = `ticket:${id}:month:${month}`;
+    const weekKey = `ticket:${id}:week:${week}`;
+
+    let [yrCounts, monthCounts, weekCounts] = await (
+      await this.redisService.mget(yrKey, monthKey, weekKey)
+    ).map((item) => +item);
+
+    yrCounts = yrCounts ? yrCounts + 1 : 1;
+    monthCounts = monthCounts ? monthCounts + 1 : 1;
+    weekCounts = weekCounts ? weekCounts + 1 : 1;
+
+    await this.redisService.mset(
+      yrKey,
+      yrCounts,
+      monthKey,
+      monthCounts,
+      weekKey,
+      weekCounts,
+    );
 
     return ticket;
   }

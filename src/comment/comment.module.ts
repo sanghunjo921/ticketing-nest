@@ -9,7 +9,11 @@ import { UserModule } from 'src/user/user.module';
 import { TicketModule } from 'src/ticket/ticket.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment]), UserModule, TicketModule],
+  imports: [
+    TypeOrmModule.forFeature([Comment, Ticket]),
+    UserModule,
+    TicketModule,
+  ],
   controllers: [CommentController],
   providers: [CommentService],
   exports: [CommentService],

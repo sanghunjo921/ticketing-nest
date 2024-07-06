@@ -60,6 +60,11 @@ export class Ticket extends BaseEntity {
   @IsString()
   imagePath?: string;
 
+  @Column({ nullable: true })
+  @Field(() => Number)
+  @IsNumber()
+  clickCount: number;
+
   @Column({ type: 'enum', enum: Category, nullable: true })
   @Field(() => Category, { nullable: true })
   @IsEnum(Category)
