@@ -59,21 +59,34 @@ export class TicketService {
   async findPopularTicketsByYear() {
     const tickets = await this.ticketRepository.find();
 
-    const caching = [];
+    const caching: { [key: number]: number } = {};
 
-    tickets.forEach(async (ticket) => {
+    const promises = tickets.map(async (ticket) => {
       const today = new Date();
       const year = today.getFullYear();
       const yrKey = `ticket:${ticket.id}:yr:${year}`;
 
-      const yrCounts = JSON.parse(await this.redisService.get(yrKey));
+      const yrCountsStr = await this.redisService.get(yrKey);
+      let yrCounts: number = 0;
+      if (yrCountsStr) {
+        yrCounts = JSON.parse(yrCountsStr);
+      }
 
       caching[ticket.id] = yrCounts;
     });
 
-    const sortedTickets = Object.entries(caching).sort((a, b) => a[1] - b[1]);
+    await Promise.all(promises);
 
-    const sortedTicket = [];
+    const sortedTickets = Object.entries(caching).sort((a, b) => b[1] - a[1]);
+
+    const sortedTicketPromises = sortedTickets.map(async ([idStr]) => {
+      const id = Number(idStr);
+      return await this.ticketRepository.findOne({ where: { id } });
+    });
+
+    const sortedTicketObjects = await Promise.all(sortedTicketPromises);
+
+    return sortedTicketObjects;
   }
 
   async findOne(id: number): Promise<FindTicketResDto> {
