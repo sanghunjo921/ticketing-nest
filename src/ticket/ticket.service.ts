@@ -122,6 +122,39 @@ export class TicketService {
     return sortedTicketObjects;
   }
 
+  async findWeeklyPopularTickets() {
+    const tickets = await this.ticketRepository.find();
+
+    const caching: { [key: number]: number } = {};
+
+    const promises = tickets.map(async (ticket) => {
+      const today = new Date();
+      const week = caculateTimeDifference();
+      const weekKey = `ticket:${ticket.id}:yr:${week}`;
+
+      const weekCountsStr = await this.redisService.get(weekKey);
+      let weekCounts: number = 0;
+      if (weekCountsStr) {
+        weekCounts = JSON.parse(weekCountsStr);
+      }
+
+      caching[ticket.id] = weekCounts;
+    });
+
+    await Promise.all(promises);
+
+    const sortedTickets = Object.entries(caching).sort((a, b) => b[1] - a[1]);
+
+    const sortedTicketPromises = sortedTickets.map(async ([idStr]) => {
+      const id = Number(idStr);
+      return await this.ticketRepository.findOne({ where: { id } });
+    });
+
+    const sortedTicketObjects = await Promise.all(sortedTicketPromises);
+
+    return sortedTicketObjects;
+  }
+
   async findOne(id: number): Promise<FindTicketResDto> {
     await this.ticketRepository.increment({ id }, 'clickCount', 1);
 
