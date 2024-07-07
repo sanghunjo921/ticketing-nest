@@ -56,7 +56,7 @@ export class TicketService {
     }
   }
 
-  async findPopularTicketsByYear() {
+  async findYearlyPopularTickets() {
     const tickets = await this.ticketRepository.find();
 
     const caching: { [key: number]: number } = {};
@@ -73,6 +73,39 @@ export class TicketService {
       }
 
       caching[ticket.id] = yrCounts;
+    });
+
+    await Promise.all(promises);
+
+    const sortedTickets = Object.entries(caching).sort((a, b) => b[1] - a[1]);
+
+    const sortedTicketPromises = sortedTickets.map(async ([idStr]) => {
+      const id = Number(idStr);
+      return await this.ticketRepository.findOne({ where: { id } });
+    });
+
+    const sortedTicketObjects = await Promise.all(sortedTicketPromises);
+
+    return sortedTicketObjects;
+  }
+
+  async findMontlyPopularTickets() {
+    const tickets = await this.ticketRepository.find();
+
+    const caching: { [key: number]: number } = {};
+
+    const promises = tickets.map(async (ticket) => {
+      const today = new Date();
+      const month = today.getMonth();
+      const monthKey = `ticket:${ticket.id}:yr:${month}`;
+
+      const monthCountsStr = await this.redisService.get(monthKey);
+      let moCounts: number = 0;
+      if (monthCountsStr) {
+        moCounts = JSON.parse(monthCountsStr);
+      }
+
+      caching[ticket.id] = moCounts;
     });
 
     await Promise.all(promises);
