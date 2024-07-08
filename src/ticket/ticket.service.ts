@@ -56,6 +56,14 @@ export class TicketService {
     }
   }
 
+  async findPopularTickets() {
+    const tickets = await this.ticketRepository.find({
+      order: { clickCount: 'DESC' },
+    });
+
+    return tickets;
+  }
+
   async findYearlyPopularTickets() {
     const tickets = await this.ticketRepository.find();
 
