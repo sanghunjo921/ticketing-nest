@@ -147,4 +147,24 @@ export class TicketController {
   delete(@Param() id: number) {
     return this.ticketSerivce.delete(id);
   }
+
+  @Get('monthly')
+  findMontlyPopularTickets() {
+    return this.ticketSerivce.findMontlyPopularTickets;
+  }
+
+  @Get('yearly')
+  findYearlyPopularTickets() {
+    return this.ticketSerivce.findYearlyPopularTickets;
+  }
+
+  @Get('weekly')
+  findWeeklyPopularTickets() {
+    return this.ticketSerivce.findWeeklyPopularTickets;
+  }
+
+  @Get('popular')
+  findPopularTickets() {
+    return this.ticketSerivce.findPopularTickets;
+  }
 }
