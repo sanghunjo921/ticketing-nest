@@ -163,6 +163,39 @@ export class TicketService {
     return sortedTicketObjects;
   }
 
+  async findDailyPopularTickets() {
+    const tickets = await this.ticketRepository.find();
+
+    const caching: { [key: number]: number } = {};
+
+    const promises = tickets.map(async (ticket) => {
+      const today = new Date();
+      const day = today.getDay();
+      const dayKey = `ticket:${ticket.id}:yr:${day}`;
+
+      const dayCountsStr = await this.redisService.get(dayKey);
+      let dayCounts: number = 0;
+      if (dayCountsStr) {
+        dayCounts = JSON.parse(dayCountsStr);
+      }
+
+      caching[ticket.id] = dayCounts;
+    });
+
+    await Promise.all(promises);
+
+    const sortedTickets = Object.entries(caching).sort((a, b) => b[1] - a[1]);
+
+    const sortedTicketPromises = sortedTickets.map(async ([idStr]) => {
+      const id = Number(idStr);
+      return await this.ticketRepository.findOne({ where: { id } });
+    });
+
+    const sortedTicketObjects = await Promise.all(sortedTicketPromises);
+
+    return sortedTicketObjects;
+  }
+
   async findOne(id: number): Promise<FindTicketResDto> {
     await this.ticketRepository.increment({ id }, 'clickCount', 1);
 
@@ -174,18 +207,21 @@ export class TicketService {
     const month = today.getMonth();
     // monday 기준
     const week = caculateTimeDifference();
+    const day = today.getDay();
 
     const yrKey = `ticket:${id}:yr:${year}`;
     const monthKey = `ticket:${id}:month:${month}`;
     const weekKey = `ticket:${id}:week:${week}`;
+    const dayKey = `ticket:${id}:week:${day}`;
 
-    let [yrCounts, monthCounts, weekCounts] = (
-      await this.redisService.mget(yrKey, monthKey, weekKey)
+    let [yrCounts, monthCounts, weekCounts, dayCounts] = (
+      await this.redisService.mget(yrKey, monthKey, weekKey, dayKey)
     ).map((item) => +item);
 
     yrCounts = yrCounts ? yrCounts + 1 : 1;
     monthCounts = monthCounts ? monthCounts + 1 : 1;
     weekCounts = weekCounts ? weekCounts + 1 : 1;
+    dayCounts = dayCounts ? dayCounts + 1 : 1;
 
     await this.redisService.mset(
       yrKey,
@@ -194,6 +230,8 @@ export class TicketService {
       monthCounts,
       weekKey,
       weekCounts,
+      dayKey,
+      dayCounts,
     );
 
     return ticket;
