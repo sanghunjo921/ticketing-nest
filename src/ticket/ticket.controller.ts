@@ -167,4 +167,9 @@ export class TicketController {
   findPopularTickets() {
     return this.ticketSerivce.findPopularTickets;
   }
+
+  @Get('daily')
+  findDailyPopularTickets() {
+    return this.ticketSerivce.findDailyPopularTickets();
+  }
 }
