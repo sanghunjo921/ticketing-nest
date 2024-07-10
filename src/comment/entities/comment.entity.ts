@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -19,9 +20,15 @@ export class Comment {
   @Column()
   content: string;
 
-  @Column({ nullable: true })
-  @IsOptional()
-  parent?: number;
+  @ManyToOne(() => Comment, (parent) => parent.childComments, {
+    nullable: true,
+  })
+  @JoinColumn()
+  parent: Comment;
+
+  @OneToMany(() => Comment, (childComment) => childComment.parent)
+  @JoinColumn()
+  childComments: Comment[];
 
   @Column({ default: 1 })
   level: number;

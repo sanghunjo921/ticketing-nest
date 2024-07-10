@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
 import { TicketService } from 'src/ticket/ticket.service';
+import { User } from 'src/user/entity/user.entity';
 
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
@@ -22,6 +23,8 @@ export class CommentService {
     private readonly commentRepository: Repository<Comment>,
     @InjectRepository(Ticket)
     private readonly ticketRepository: Repository<Ticket>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly userService: UserService,
     @Inject(forwardRef(() => TicketService))
     private readonly ticketService: TicketService,
@@ -30,17 +33,22 @@ export class CommentService {
   async createComment({
     content,
     level,
-    parent,
+    parentId,
     userId,
     ticketId,
   }: CreateCommentReqDto): Promise<CreateCommentResDto> {
-    const user = await this.userService.findOne(userId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     const ticket = await this.ticketService.findOne(ticketId);
+    const parent: Comment | null = parentId
+      ? await this.commentRepository.findOne({ where: { id: parentId } })
+      : null;
 
-    const newComment = this.commentRepository.create({
+    const newComment: Comment = this.commentRepository.create({
       content,
-      level,
       parent,
+      level,
+      user,
+      ticket,
     });
 
     ticket.comments.push(newComment);
@@ -74,14 +82,32 @@ export class CommentService {
   ): Promise<Comment[]> {
     const skip = (page - 1) * size;
 
+    const parentComment = await this.commentRepository.findOne({
+      where: { id: commentId },
+    });
+
     const targetComments = await this.commentRepository.find({
-      where: { parent: commentId },
+      where: { parent: parentComment },
       skip,
       take: size,
     });
 
     return targetComments;
   }
+
+  // async getCommentTree(commentId: number): Promise<Comment> {
+  //   const commentRepository = getRepository(Comment);
+  //   const parentComment = await commentRepository.findOne({
+  //     where: { id: commentId },
+  //   });
+
+  //   if (!parentComment) {
+  //     throw new Error('Comment not found');
+  //   }
+
+  //   const tree = await commentRepository.findDescendantsTree(parentComment);
+  //   return tree;
+  // }
 
   async getCommentByTicket(id: number, ticketId: number): Promise<Comment> {
     try {
