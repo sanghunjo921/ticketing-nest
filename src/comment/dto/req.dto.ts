@@ -11,7 +11,7 @@ export class CreateCommentReqDto {
 
   @IsNumber()
   @IsOptional()
-  parent?: number;
+  parentId?: number;
 
   @IsNumber()
   @IsOptional()
