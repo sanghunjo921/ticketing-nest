@@ -95,19 +95,45 @@ export class CommentService {
     return targetComments;
   }
 
-  // async getCommentTree(commentId: number): Promise<Comment> {
-  //   const commentRepository = getRepository(Comment);
-  //   const parentComment = await commentRepository.findOne({
-  //     where: { id: commentId },
-  //   });
+  async getCommentTree(commentId: number): Promise<Comment> {
+    const rootComment = await this.commentRepository.findOne({
+      where: { id: commentId },
+      relations: ['childComments'],
+    });
 
-  //   if (!parentComment) {
-  //     throw new Error('Comment not found');
-  //   }
+    async function fetchChildren(comment: Comment): Promise<Comment> {
+      const children = await this.commentRepository.find({
+        where: { parent: comment },
+        relations: ['childComments'],
+      });
 
-  //   const tree = await commentRepository.findDescendantsTree(parentComment);
-  //   return tree;
-  // }
+      comment.childComments = await Promise.all(
+        children.map((child) => fetchChildren(child)),
+      );
+      return comment;
+    }
+
+    return fetchChildren.call(this, rootComment);
+  }
+
+  async paginateChildrenComments(
+    commentId: number,
+    page: number,
+    size: number,
+  ): Promise<{ children: Comment[]; totalCount: number; totalPages: number }> {
+    const skip = (page - 1) * size;
+
+    const [children, totalCount] = await this.commentRepository.findAndCount({
+      where: { parent: { id: commentId } },
+      relations: ['childComments'],
+      skip,
+      take: size,
+    });
+
+    const totalPages = Math.ceil(totalCount / size);
+
+    return { children, totalCount, totalPages };
+  }
 
   async getCommentByTicket(id: number, ticketId: number): Promise<Comment> {
     try {
