@@ -75,4 +75,14 @@ export class CommentController {
   deletePost(@Param('id', ParseIntPipe) id: number): Promise<Comment> {
     return this.commentService.deleteComment(id);
   }
+
+  @Get('tree')
+  getCommentTree(commentId: number) {
+    return this.commentService.getCommentTree(commentId);
+  }
+
+  @Get('paginateTree')
+  paginateChildrenComments() {
+    return this.commentService.paginateChildrenComments();
+  }
 }
